@@ -112,7 +112,7 @@ let swiperPorto = new Swiper('.portfolio__container', {
 
 /*==================== Typed JS ====================*/
 let typed = new Typed(".multiple-text", { 
-  strings: ["Graduate", "Information System"],    
+  strings: ["Open to Work", "Information System", "Master of Computer Science"],    
   smartBackspace: true, 
   showCursor: true,
   cursorChar: '|',
