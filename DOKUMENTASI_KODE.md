@@ -157,3 +157,10 @@ Bagian EmailJS pada `assets/js/main.js` dikembalikan mengikuti kode lama yang su
 ## Contact Form Final Stabil
 
 Bagian EmailJS pada `assets/js/main.js` dipertahankan memakai kode lama yang sudah terbukti berhasil. Tidak ada handler gagal/catch tambahan pada proses pengiriman. Perubahan hanya dilakukan di dalam callback sukses `.then()`, yaitu menampilkan pop-up `Pesan berhasil dikirim` dan mengosongkan field Name, E-Mail, serta Message setelah pesan berhasil dikirim.
+
+
+## Patch Final V12 - Deploy Safe
+
+Versi ini memakai nama file baru `assets/css/style-v12.css` dan `assets/js/main-v12.js` agar browser/GitHub Pages tidak mengambil file lama dari cache. Bagian EmailJS tetap memakai jalur lama yang sudah berhasil, tanpa handler gagal tambahan. Setelah pesan berhasil terkirim, form otomatis dikosongkan dan notifikasi sukses ditampilkan.
+
+Logo teknologi juga diberi batas ukuran langsung di HTML dan CSS agar file SVG seperti HTML/CSS/JS tidak membesar ketika ada cache CSS yang tidak sinkron saat deploy.
