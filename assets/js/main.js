@@ -159,7 +159,7 @@ if (typeof Swiper !== 'undefined' && document.querySelector('.portfolio__contain
    ========================= */
 if (typeof Typed !== 'undefined' && document.querySelector('.multiple-text')) {
   new Typed('.multiple-text', {
-    strings: ['Open to Work', 'Information System', 'Master of Computer Science'],
+    strings: ['Open to Work', 'Information System', 'Data Analyst'],
     smartBackspace: true,
     showCursor: true,
     cursorChar: '|',
