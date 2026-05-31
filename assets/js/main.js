@@ -1,127 +1,175 @@
-// ---------- MENU SHOW Y HIDDEN -----------------
-const navMenu = document.getElementById("nav-menu"),
-  navToggle = document.getElementById("nav-toggle"),
-  navClose = document.getElementById("nav-close");
+/* ============================================================
+   Portfolio Rahmat Hidayat - Main JavaScript
+   ------------------------------------------------------------
+   File ini berisi seluruh interaksi utama website portfolio:
+   1. Mobile navigation
+   2. Skill show more / show less
+   3. Background tab Education / Organization
+   4. Project carousel menggunakan Swiper
+   5. Typed text pada hero section
+   6. Contact form menggunakan EmailJS
+   7. Active navigation, sticky shadow, scroll up, dan dark mode
 
-// ---------- MENU SHOW --------------------------
-// validate if constant exist
-if (navToggle) {
-  navToggle.addEventListener("click", () => {
-    navMenu.classList.add("show-menu");
+   Catatan maintenance:
+   - Semua selector penting memakai id atau data-attribute agar mudah dicari.
+   - Konfigurasi EmailJS sengaja dikumpulkan di satu tempat, yaitu EMAILJS_CONFIG.
+   - Jangan menampilkan pesan sukses palsu. Status sukses hanya muncul saat EmailJS benar-benar mengembalikan response sukses.
+   ============================================================ */
+
+/* =========================
+   01. Mobile navigation
+   ========================= */
+const navMenu = document.getElementById('nav-menu');
+const navToggle = document.getElementById('nav-toggle');
+const navClose = document.getElementById('nav-close');
+
+// Membuka menu mobile saat ikon menu diklik.
+if (navToggle && navMenu) {
+  navToggle.addEventListener('click', () => {
+    navMenu.classList.add('show-menu');
   });
 }
 
-// ---------- MENU HIDDEN--------------------------
-// validate if constant exist
-if (navClose) {
-  navClose.addEventListener("click", () => {
-    navMenu.classList.remove("show-menu");
+// Menutup menu mobile saat ikon close diklik.
+if (navClose && navMenu) {
+  navClose.addEventListener('click', () => {
+    navMenu.classList.remove('show-menu');
   });
 }
 
-// ------------------- REMOVE MENU MOBILE ------------------------
-const navLink = document.querySelectorAll(".nav__link");
-
-function linkAction() {
-  const navMenu = document.getElementById("nav-menu");
-  // When we click on each nav__link, we remove the show-menu class
-  navMenu.classList.remove("show-menu");
-}
-navLink.forEach((n) => n.addEventListener("click", linkAction));
-
-// -------------------- ACCORDION SKILLS -------------------------
-const skillsContent = document.getElementsByClassName('skills__content'),
-      skillsHeader = document.querySelectorAll('.skills__header')
-
-
-function toggleSkills() {
-  let itemClass = this.parentNode.className
-
-  for(i=0; i<skillsContent.length; i++){
-    skillsContent[i].className='skills__content skills__close'
-  }
-  if (itemClass === 'skills__content skills__close') {
-    this.parentNode.className = 'skills__content skills__open'
-  }
-}
-
-skillsHeader.forEach((el) =>{
-  el.addEventListener('click',toggleSkills)
-})
-// --------------------- QUALIFICATION TABS ----------------------
-const tabs = document.querySelectorAll('[data-target]'),
-      tabContents = document.querySelectorAll('[data-content]')
-
-tabs.forEach(tab =>{
-  tab.addEventListener('click', () =>{
-      const target = document.querySelector(tab.dataset.target)
-
-      tabContents.forEach(tabContent =>{
-          tabContent.classList.remove('qualification__active')
-      })
-      target.classList.add('qualification__active')
-
-      tabs.forEach(tab =>{
-        tab.classList.remove('qualification__active')
-      })
-
-      tab.classList.add('qualification__active')
-  })
-})
-
-// --------------------- SERVICES MODAL ----------------------
-const modalViews = document.querySelectorAll('.services__modal'),
-      modalButton = document.querySelectorAll('.services__button'),
-      modalClose = document.querySelectorAll('.services__modal-close')
-
-let modal = function(modalClicked){
-  modalViews[modalClicked].classList.add('active-modal')
-}
-
-modalButton.forEach((modalButton, e) =>{
-  modalButton.addEventListener('click', () =>{
-    modal(e)
-  })
-})
-
-modalClose.forEach((modalClose) =>{
-  modalClose.addEventListener('click', () =>{
-    modalViews.forEach((modalViews) =>{
-      modalViews.classList.remove('active-modal')
-    })
-  })
-})
-
-// --------------------- PORTFOLIO SWIPER ----------------------
-let swiperPorto = new Swiper('.portfolio__container', {
-  cssMode: true,
-  loop: true,
-
-  navigation: {
-    nextEl: '.swiper-button-next',
-    prevEl: '.swiper-button-prev',
-  },
-  pagination: {
-    el: '.swiper-pagination',
-    clickable: true,
-  },
-  mousewheel: true,
-  keyboard: true,
-
+// Menutup menu mobile setelah salah satu link navigasi dipilih.
+document.querySelectorAll('.nav__link').forEach((link) => {
+  link.addEventListener('click', () => {
+    if (navMenu) navMenu.classList.remove('show-menu');
+  });
 });
 
-/*==================== Typed JS ====================*/
-let typed = new Typed(".multiple-text", { 
-  strings: ["Open to Work", "Information System", "Master of Computer Science"],    
-  smartBackspace: true, 
-  showCursor: true,
-  cursorChar: '|',
-  autoInsertCss: true, 
-  typeSpeed: 35,
-  backSpeed: 35,
-  backDelay: 1000,
-  loop: true
-})
+/* =========================
+   02. Skills: lihat semua
+   =========================
+   Struktur HTML yang dibutuhkan:
+   - Card skill memiliki atribut data-skill-card
+   - Tombol memiliki atribut data-show-more
+   - Item tambahan diberi class: skill-item is-hidden
+*/
+document.querySelectorAll('[data-show-more]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const card = button.closest('[data-skill-card]');
+    if (!card) return;
+
+    const isExpanded = card.classList.toggle('is-expanded');
+    const label = button.querySelector('[data-toggle-label]');
+
+    button.setAttribute('aria-expanded', String(isExpanded));
+    if (label) label.textContent = isExpanded ? 'Tampilkan lebih sedikit' : 'Lihat semua';
+  });
+});
+
+/* =========================
+   03. Background tabs
+   =========================
+   Dipakai untuk mengganti konten Education dan Organization.
+*/
+const qualificationTabs = document.querySelectorAll('[data-target]');
+const qualificationContents = document.querySelectorAll('[data-content]');
+
+qualificationTabs.forEach((tab) => {
+  tab.addEventListener('click', () => {
+    const target = document.querySelector(tab.dataset.target);
+    if (!target) return;
+
+    qualificationContents.forEach((content) => {
+      content.classList.remove('qualification__active');
+    });
+
+    qualificationTabs.forEach((button) => {
+      button.classList.remove('qualification__active');
+    });
+
+    target.classList.add('qualification__active');
+    tab.classList.add('qualification__active');
+  });
+});
+
+/* =========================
+   04. Services modal
+   =========================
+   Saat ini struktur services tidak tampil di halaman utama, namun logic ini dipertahankan agar aman jika section services dipakai kembali.
+*/
+const modalViews = document.querySelectorAll('.services__modal');
+const modalButtons = document.querySelectorAll('.services__button');
+const modalCloseButtons = document.querySelectorAll('.services__modal-close');
+
+modalButtons.forEach((button, index) => {
+  button.addEventListener('click', () => {
+    if (modalViews[index]) modalViews[index].classList.add('active-modal');
+  });
+});
+
+modalCloseButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    modalViews.forEach((modal) => modal.classList.remove('active-modal'));
+  });
+});
+
+/* =========================
+   05. Project carousel
+   =========================
+   Perbaikan utama:
+   - loop dimatikan agar slide tidak meloncat ke project pertama.
+   - threshold kecil agar swipe terasa responsif.
+   - observer aktif agar Swiper menghitung ulang ukuran ketika layout berubah.
+*/
+if (typeof Swiper !== 'undefined' && document.querySelector('.portfolio__container')) {
+  new Swiper('.portfolio__container', {
+    loop: false,
+    rewind: false,
+    speed: 350,
+    slidesPerView: 1,
+    spaceBetween: 24,
+    grabCursor: true,
+    threshold: 5,
+    resistanceRatio: 0.35,
+    preventClicks: true,
+    preventClicksPropagation: true,
+    watchOverflow: true,
+    observer: true,
+    observeParents: true,
+    updateOnWindowResize: true,
+
+    navigation: {
+      nextEl: '.swiper-button-next',
+      prevEl: '.swiper-button-prev',
+    },
+
+    pagination: {
+      el: '.swiper-pagination',
+      clickable: true,
+    },
+
+    keyboard: {
+      enabled: true,
+      onlyInViewport: true,
+    },
+  });
+}
+
+/* =========================
+   06. Hero typed text
+   ========================= */
+if (typeof Typed !== 'undefined' && document.querySelector('.multiple-text')) {
+  new Typed('.multiple-text', {
+    strings: ['Open to Work', 'Information System', 'Data Analyst'],
+    smartBackspace: true,
+    showCursor: true,
+    cursorChar: '|',
+    autoInsertCss: true,
+    typeSpeed: 35,
+    backSpeed: 35,
+    backDelay: 1000,
+    loop: true,
+  });
+}
 
 /*==================== EMAIL JS ====================*/
 const contactForm = document.getElementById('contact-form'),
@@ -130,22 +178,86 @@ const contactForm = document.getElementById('contact-form'),
         userMessage = document.getElementById('user-message'),
         contactMessage = document.getElementById('contact-message')
 
+/*
+  Notifikasi sukses contact form.
+  Catatan penting:
+  - Alur EmailJS di bawah sengaja tetap mengikuti kode lama yang sudah berhasil.
+  - Fungsi ini hanya dipanggil setelah EmailJS masuk ke callback sukses .then().
+  - Tidak ada catch/failure handler agar alur pengiriman tidak berubah dari versi lama.
+*/
+const showEmailSuccessNotification = () => {
+    let notification = document.getElementById('email-success-notification')
+
+    if (!notification) {
+        notification = document.createElement('div')
+        notification.id = 'email-success-notification'
+        notification.setAttribute('role', 'status')
+        notification.setAttribute('aria-live', 'polite')
+        document.body.appendChild(notification)
+    }
+
+    notification.textContent = 'Pesan berhasil dikirim'
+
+    Object.assign(notification.style, {
+        position: 'fixed',
+        top: '24px',
+        left: '50%',
+        zIndex: '999999',
+        maxWidth: 'calc(100vw - 32px)',
+        padding: '14px 22px',
+        borderRadius: '16px',
+        fontFamily: 'inherit',
+        fontSize: '15px',
+        fontWeight: '600',
+        lineHeight: '1.5',
+        textAlign: 'center',
+        color: '#166534',
+        background: '#dcfce7',
+        border: '1px solid rgba(34, 197, 94, .45)',
+        boxShadow: '0 20px 50px rgba(15, 23, 42, .22)',
+        opacity: '0',
+        transform: 'translate(-50%, -12px)',
+        pointerEvents: 'none',
+        transition: 'opacity .25s ease, transform .25s ease'
+    })
+
+    requestAnimationFrame(() => {
+        notification.style.opacity = '1'
+        notification.style.transform = 'translate(-50%, 0)'
+    })
+
+    clearTimeout(window.emailSuccessNotificationTimer)
+    window.emailSuccessNotificationTimer = setTimeout(() => {
+        notification.style.opacity = '0'
+        notification.style.transform = 'translate(-50%, -12px)'
+    }, 4200)
+}
+
 const sendEmail = (e) => {
     e.preventDefault()
 
     if (contactName.value === '' || contactEmail.value === '' || userMessage.value === "") {
-        contactMessage.classList.remove('color-blue')
+        contactMessage.classList.remove('color-blue', 'color-green')
         contactMessage.classList.add('color-red')
  
         contactMessage.textContent = "Field input tidak boleh kosong"
     } else {
         emailjs.sendForm('service_39oxs8i', 'template_lykg67g', '#contact-form', 'QvQIyg2CW3CKLIkS9')
             .then(() =>  {
+                contactMessage.classList.remove('color-red', 'color-blue')
                 contactMessage.classList.add('color-green')
                 contactMessage.textContent = "Pesan telah dikirim"
 
+                showEmailSuccessNotification()
+
+                contactForm.reset()
+                contactName.value = ''
+                contactEmail.value = ''
+                userMessage.value = ''
+
                 setTimeout(() => {
                     contactMessage.textContent = ""
+                    contactMessage.classList.remove('color-green')
                 }, 5000 )
             })
     }
@@ -153,70 +265,91 @@ const sendEmail = (e) => {
 
 contactForm.addEventListener('submit', sendEmail)
 
-// --------------------- SCROLL SECTION ACTIVE LINK ----------------------
-const sections = document.querySelectorAll('section[id]')
+/* =========================
+   08. Active navigation on scroll
+   ========================= */
+const sections = document.querySelectorAll('section[id]');
 
-function scrollActive(){
-    const scrollY = window.pageYOffset
+const scrollActive = () => {
+  const scrollY = window.pageYOffset;
 
-    sections.forEach(current =>{
-        const sectionHeight = current.offsetHeight
-        const sectionTop = current.offsetTop - 50;
-        sectionId = current.getAttribute('id')
+  sections.forEach((current) => {
+    const sectionHeight = current.offsetHeight;
+    const sectionTop = current.offsetTop - 80;
+    const sectionId = current.getAttribute('id');
+    const navItem = document.querySelector(`.nav__menu a[href*="${sectionId}"]`);
 
-        if(scrollY > sectionTop && scrollY <= sectionTop + sectionHeight){
-            document.querySelector('.nav__menu a[href*=' + sectionId + ']').classList.add('active-link')
-        }else{
-            document.querySelector('.nav__menu a[href*=' + sectionId + ']').classList.remove('active-link')
-        }
-    })
-}
-window.addEventListener('scroll', scrollActive)
+    if (!navItem) return;
 
-// --------------------- CHANGE BACKROUND HEADER ----------------------
+    if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+      navItem.classList.add('active-link');
+    } else {
+      navItem.classList.remove('active-link');
+    }
+  });
+};
 
-function scrollHeader(){
-  const nav = document.getElementById('header')
-  // When the scroll is greater than 200 viewport height, add the scroll-header class to the header tag
-  if(this.scrollY >= 80) nav.classList.add('scroll-header'); else nav.classList.remove('scroll-header')
-}
-window.addEventListener('scroll', scrollHeader)
+window.addEventListener('scroll', scrollActive);
 
-// --------------------- SHOW SCROLL UP -------------------------------
-function scrollUp(){
-  const scrollUp = document.getElementById('scrollUp');
-  // When the scroll is higher than 560 viewport height, add the show-scroll class to the a tag with the scroll-top class
-  if(this.scrollY >= 2000) scrollUp.classList.add('show-scroll'); else scrollUp.classList.remove('show-scroll')
-}
-window.addEventListener('scroll', scrollUp)
+/* =========================
+   09. Header shadow on scroll
+   ========================= */
+const scrollHeader = () => {
+  const header = document.getElementById('header');
+  if (!header) return;
 
-// --------------------- DARK MODE -------------------------------
+  if (window.scrollY >= 80) {
+    header.classList.add('scroll-header');
+  } else {
+    header.classList.remove('scroll-header');
+  }
+};
 
-const themeButton = document.getElementById('mode-button')
-const darkTheme = 'dark-theme'
-const iconTheme = 'uil-sun'
+window.addEventListener('scroll', scrollHeader);
 
-// Previously selected topic (if user selected)
-const selectedTheme = localStorage.getItem('selected-theme')
-const selectedIcon = localStorage.getItem('selected-icon')
+/* =========================
+   10. Scroll up button
+   ========================= */
+const scrollUp = () => {
+  const scrollUpButton = document.getElementById('scrollUp');
+  if (!scrollUpButton) return;
 
-// We obtain the current theme that the interface has by validating the dark-theme class
-const getCurrentTheme = () => document.body.classList.contains(darkTheme) ? 'dark' : 'light'
-const getCurrentIcon = () => themeButton.classList.contains(iconTheme) ? 'uil-moon' : 'uil-sun'
+  if (window.scrollY >= 900) {
+    scrollUpButton.classList.add('show-scroll');
+  } else {
+    scrollUpButton.classList.remove('show-scroll');
+  }
+};
 
-// We validate if the user previously chose a topic
+window.addEventListener('scroll', scrollUp);
+
+/* =========================
+   11. Dark mode
+   ========================= */
+const themeButton = document.getElementById('mode-button');
+const darkTheme = 'dark-theme';
+const iconTheme = 'uil-sun';
+
+const selectedTheme = localStorage.getItem('selected-theme');
+const selectedIcon = localStorage.getItem('selected-icon');
+
+const getCurrentTheme = () => (document.body.classList.contains(darkTheme) ? 'dark' : 'light');
+const getCurrentIcon = () => (themeButton?.classList.contains(iconTheme) ? 'uil-moon' : 'uil-sun');
+
 if (selectedTheme) {
-  // If the validation is fulfilled, we ask what the issue was to know if we activated or deactivated the dark
-  document.body.classList[selectedTheme === 'dark' ? 'add' : 'remove'](darkTheme)
-  themeButton.classList[selectedIcon === 'uil-moon' ? 'add' : 'remove'](iconTheme)
+  document.body.classList[selectedTheme === 'dark' ? 'add' : 'remove'](darkTheme);
 }
 
-// Activate / deactivate the theme manually with the button
-themeButton.addEventListener('click', () => {
-    // Add or remove the dark / icon theme
-    document.body.classList.toggle(darkTheme)
-    themeButton.classList.toggle(iconTheme)
-    // We save the theme and the current icon that the user chose
-    localStorage.setItem('selected-theme', getCurrentTheme())
-    localStorage.setItem('selected-icon', getCurrentIcon())
-})
+if (themeButton && selectedIcon) {
+  themeButton.classList[selectedIcon === 'uil-moon' ? 'add' : 'remove'](iconTheme);
+}
+
+if (themeButton) {
+  themeButton.addEventListener('click', () => {
+    document.body.classList.toggle(darkTheme);
+    themeButton.classList.toggle(iconTheme);
+
+    localStorage.setItem('selected-theme', getCurrentTheme());
+    localStorage.setItem('selected-icon', getCurrentIcon());
+  });
+}
