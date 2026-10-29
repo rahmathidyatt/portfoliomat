@@ -1,4 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { ArrowLeft, ExternalLink, Download, X, Eye, Award } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { translations } from '../data/translations';
 import { CERTIFICATES } from '../data/portfolioData';
 import { CertificateItem } from '../types';
 
@@ -7,126 +10,216 @@ interface CertificatesPageProps {
 }
 
 export const CertificatesPage: React.FC<CertificatesPageProps> = ({ onBackToPortfolio }) => {
+  const { language } = useLanguage();
+  const t = translations[language];
+
+  const [activeFilter, setActiveFilter] = useState<'all' | 'data' | 'web' | 'leadership'>('all');
   const [selectedCert, setSelectedCert] = useState<CertificateItem | null>(null);
 
+  // Close modal on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedCert(null);
+      }
+    };
+    if (selectedCert) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedCert]);
+
+  const filteredCertificates = CERTIFICATES.filter((cert) => {
+    if (activeFilter === 'all') return true;
+    return cert.category === activeFilter;
+  });
+
   return (
-    <div className="certificates-page">
-      <main className="main" style={{ paddingTop: '5rem', minHeight: '80vh' }}>
-        <section className="section">
-          <div className="container">
-            <div className="page-heading">
-              <span className="page-heading__eyebrow">Certificate Gallery</span>
-              <h1 className="section__title">All Certificates</h1>
-              <p className="page-heading__text">
-                A complete certificate gallery displayed directly inside the portfolio website, so visitors can review achievements without opening an external Drive folder.
-              </p>
-              <div style={{ marginTop: '1.25rem', marginBottom: '2rem' }}>
-                <button
-                  onClick={onBackToPortfolio}
-                  className="button button--flex button--small"
-                  style={{ cursor: 'pointer', border: 'none', font: 'inherit' }}
+    <div className="certificates-page" style={{ paddingTop: 'calc(var(--header-height) + 1.5rem)', minHeight: '85vh' }}>
+      <div className="container">
+        {/* Navigation back */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <button
+            type="button"
+            onClick={onBackToPortfolio}
+            className="button button--secondary button--small"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+          >
+            <ArrowLeft size={16} />
+            <span>{t.certificates.backToPortfolio}</span>
+          </button>
+        </div>
+
+        <div className="section__header" style={{ marginBottom: '2.5rem' }}>
+          <span className="section__kicker">{t.certificates.pageEyebrow}</span>
+          <h1 className="section__title">{t.certificates.pageTitle}</h1>
+          <p className="section__subtitle">{t.certificates.pageDescription}</p>
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="cert-filter-bar" role="tablist">
+          <button
+            type="button"
+            className={`filter-tab ${activeFilter === 'all' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('all')}
+            role="tab"
+            aria-selected={activeFilter === 'all'}
+          >
+            {t.certificates.filterAll}
+          </button>
+          <button
+            type="button"
+            className={`filter-tab ${activeFilter === 'data' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('data')}
+            role="tab"
+            aria-selected={activeFilter === 'data'}
+          >
+            {t.certificates.filterData}
+          </button>
+          <button
+            type="button"
+            className={`filter-tab ${activeFilter === 'web' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('web')}
+            role="tab"
+            aria-selected={activeFilter === 'web'}
+          >
+            {t.certificates.filterWeb}
+          </button>
+          <button
+            type="button"
+            className={`filter-tab ${activeFilter === 'leadership' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('leadership')}
+            role="tab"
+            aria-selected={activeFilter === 'leadership'}
+          >
+            {t.certificates.filterOrg}
+          </button>
+        </div>
+
+        {/* Full Certificates Grid */}
+        <div className="certificate-card-grid" style={{ marginBottom: '4rem' }}>
+          {filteredCertificates.map((cert) => (
+            <article
+              key={cert.id}
+              className="cert-card"
+              onClick={() => setSelectedCert(cert)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSelectedCert(cert);
+                }
+              }}
+              aria-label={`View certificate ${cert.title}`}
+            >
+              <div className="cert-card__thumb">
+                <img
+                  src={cert.img}
+                  alt={`${cert.title} certificate`}
+                  loading="lazy"
+                />
+                <div className="cert-card__overlay">
+                  <span className="cert-card__preview-badge">
+                    <Eye size={14} />
+                    <span>Quick Preview</span>
+                  </span>
+                </div>
+              </div>
+
+              <div className="cert-card__body">
+                <h3 className="cert-card__title">{cert.title}</h3>
+                <div className="cert-card__meta">
+                  <span>{cert.issuer}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{cert.date}</span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        {/* Lightbox Modal */}
+        {selectedCert && (
+          <div
+            className="cert-modal-backdrop"
+            onClick={() => setSelectedCert(null)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="cert-page-modal-title"
+          >
+            <div
+              className="cert-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                className="cert-modal-close"
+                onClick={() => setSelectedCert(null)}
+                aria-label={t.certificates.closeModal}
+                type="button"
+              >
+                <X size={20} />
+              </button>
+
+              <div style={{ textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  color: 'var(--first-color)',
+                  fontSize: 'var(--smaller-font-size)',
+                  fontWeight: 600,
+                  marginBottom: '0.35rem'
+                }}>
+                  <Award size={15} />
+                  {t.certificates.verifiedBadge}
+                </span>
+                <h3
+                  id="cert-page-modal-title"
+                  style={{
+                    fontSize: 'var(--h3-font-size)',
+                    marginBottom: '0.35rem',
+                    color: 'var(--title-color)',
+                    lineHeight: 1.3
+                  }}
                 >
-                  <i className="uil uil-arrow-left button__icon"></i> Back to Portfolio
-                </button>
+                  {selectedCert.title}
+                </h3>
+                <p style={{ color: 'var(--text-color-light)', fontSize: 'var(--small-font-size)' }}>
+                  {selectedCert.issuer} &bull; {selectedCert.date}
+                </p>
+              </div>
+
+              <div className="cert-modal-img-wrap">
+                <img
+                  src={selectedCert.img}
+                  alt={selectedCert.title}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.85rem', flexWrap: 'wrap' }}>
+                <a
+                  href={selectedCert.pdf}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="button button--flex button--small"
+                >
+                  <ExternalLink size={15} />
+                  <span>{t.certificates.openPdf}</span>
+                </a>
+                <a
+                  href={selectedCert.pdf}
+                  download
+                  className="button button--secondary button--flex button--small"
+                >
+                  <Download size={15} />
+                  <span>{t.certificates.downloadPdf}</span>
+                </a>
               </div>
             </div>
           </div>
-
-          <div className="sertifikat__container container grid certificate-grid">
-            {CERTIFICATES.map((cert) => (
-              <article key={cert.id} className="blog-item certificate-card">
-                <div className="inner">
-                  <a
-                    className="thumb"
-                    href={cert.pdf}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setSelectedCert(cert);
-                    }}
-                  >
-                    <img src={cert.img} alt={`${cert.title} certificate`} />
-                  </a>
-                  <div className="details">
-                    <h3 className="title">
-                      <a
-                        href={cert.pdf}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setSelectedCert(cert);
-                        }}
-                      >
-                        {cert.title}
-                      </a>
-                    </h3>
-                    <ul className="meta">
-                      <li>{cert.date}</li>
-                      <li>{cert.issuer}</li>
-                    </ul>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-      </main>
-
-      {/* Preview Modal */}
-      {selectedCert && (
-        <div className="cert-modal-backdrop" onClick={() => setSelectedCert(null)}>
-          <div className="cert-modal-content" onClick={(e) => e.stopPropagation()}>
-            <button
-              className="cert-modal-close"
-              onClick={() => setSelectedCert(null)}
-              aria-label="Close modal"
-            >
-              &times;
-            </button>
-            <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
-              <h3 style={{ fontSize: 'var(--h3-font-size)', marginBottom: '0.25rem', color: 'var(--title-color)' }}>
-                {selectedCert.title}
-              </h3>
-              <p style={{ color: 'var(--text-color-light)', fontSize: 'var(--small-font-size)' }}>
-                {selectedCert.issuer} &bull; {selectedCert.date}
-              </p>
-            </div>
-            <div style={{ textAlign: 'center', marginBottom: '1.25rem' }}>
-              <img
-                src={selectedCert.img}
-                alt={selectedCert.title}
-                style={{
-                  maxWidth: '100%',
-                  maxHeight: '65vh',
-                  borderRadius: '0.5rem',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                  margin: '0 auto',
-                }}
-              />
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-              <a
-                href={selectedCert.pdf}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="button button--flex button--small"
-              >
-                Open Original PDF <i className="uil uil-external-link-alt button__icon"></i>
-              </a>
-              <a
-                href={selectedCert.pdf}
-                download
-                className="button button--flex button--small"
-                style={{ background: 'var(--text-color-light)' }}
-              >
-                Download PDF <i className="uil uil-arrow-to-bottom button__icon"></i>
-              </a>
-            </div>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

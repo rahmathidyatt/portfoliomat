@@ -1,15 +1,28 @@
 import React, { useState, useEffect } from 'react';
-
-const TYPED_STRINGS = ['Open to Work', 'Information System', 'Data Analyst'];
+import { ArrowDown, ArrowRight, Download, Mail, MapPin } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { translations } from '../data/translations';
 
 export const Hero: React.FC = () => {
+  const { language } = useLanguage();
+  const t = translations[language];
+  const typedStrings = t.hero.typedStrings;
+
   const [currentText, setCurrentText] = useState('');
   const [stringIndex, setStringIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Reset indices on language change
   useEffect(() => {
-    const fullText = TYPED_STRINGS[stringIndex];
+    setStringIndex(0);
+    setCharIndex(0);
+    setCurrentText('');
+    setIsDeleting(false);
+  }, [language]);
+
+  useEffect(() => {
+    const fullText = typedStrings[stringIndex % typedStrings.length];
     let timer: ReturnType<typeof setTimeout>;
 
     if (!isDeleting) {
@@ -17,103 +30,157 @@ export const Hero: React.FC = () => {
         timer = setTimeout(() => {
           setCurrentText(fullText.substring(0, charIndex + 1));
           setCharIndex((prev) => prev + 1);
-        }, 90);
+        }, 85);
       } else {
-        // Pause at full word before deleting
         timer = setTimeout(() => {
           setIsDeleting(true);
-        }, 1500);
+        }, 1800);
       }
     } else {
       if (charIndex > 0) {
         timer = setTimeout(() => {
           setCurrentText(fullText.substring(0, charIndex - 1));
           setCharIndex((prev) => prev - 1);
-        }, 45);
+        }, 40);
       } else {
         setIsDeleting(false);
-        setStringIndex((prev) => (prev + 1) % TYPED_STRINGS.length);
+        setStringIndex((prev) => (prev + 1) % typedStrings.length);
       }
     }
 
     return () => clearTimeout(timer);
-  }, [charIndex, isDeleting, stringIndex]);
+  }, [charIndex, isDeleting, stringIndex, typedStrings]);
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      const yOffset = -80;
+      const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
     }
   };
 
   return (
-    <section className="home section" id="home">
-      <div className="home__container container grid">
-        <div className="home__content grid">
-          <div className="home__img">
-            <svg
-              className="home__blob"
-              viewBox="0 0 200 187"
-              xmlns="http://www.w3.org/2000/svg"
-              xmlnsXlink="http://www.w3.org/1999/xlink"
-            >
-              <mask id="mask0" mask-type="alpha">
-                <path
-                  d="M190.312 36.4879C206.582 62.1187 201.309 102.826 182.328 134.186C163.346 165.547 
-                  130.807 187.559 100.226 186.353C69.6454 185.297 41.0228 161.023 21.7403 129.362C2.45775 
-                  97.8511 -7.48481 59.1033 6.67581 34.5279C20.9871 10.1032 59.7028 -0.149132 97.9666 
-                  0.00163737C136.23 0.303176 174.193 10.857 190.312 36.4879Z"
-                />
-              </mask>
-              <g mask="url(#mask0)">
-                <path
-                  d="M190.312 36.4879C206.582 62.1187 201.309 102.826 182.328 134.186C163.346 
-                  165.547 130.807 187.559 100.226 186.353C69.6454 185.297 41.0228 161.023 21.7403 
-                  129.362C2.45775 97.8511 -7.48481 59.1033 6.67581 34.5279C20.9871 10.1032 59.7028 
-                  -0.149132 97.9666 0.00163737C136.23 0.303176 174.193 10.857 190.312 36.4879Z"
-                />
-                <image className="home__blob-img" href="/assets/img/foto.png" />
-              </g>
-            </svg>
+    <section className="hero-section" id="home">
+      <div className="hero-ambient-glow" aria-hidden="true" />
+
+      <div className="container">
+        <div className="hero-grid">
+          {/* Hero Content */}
+          <div className="hero-content">
+            <div className="hero-badge-wrap">
+              <span className="status-badge">
+                <span className="status-indicator-dot" />
+                {t.hero.badge}
+              </span>
+              <span className="location-indicator">
+                <MapPin size={14} />
+                {t.hero.location}
+              </span>
+            </div>
+
+            <div className="hero-title-group">
+              <p className="hero-greeting">{t.hero.greeting}</p>
+              <h1 className="hero-name">{t.hero.name}</h1>
+              <div className="hero-role-wrapper">
+                <span className="hero-role-text">{currentText}</span>
+                <span className="typed-cursor">|</span>
+              </div>
+            </div>
+
+            <p className="hero-description">{t.hero.description}</p>
+
+            <div className="hero-actions">
+              <button
+                type="button"
+                onClick={() => scrollToSection('portfolio')}
+                className="button button--flex"
+              >
+                <span>{t.hero.ctaPrimary}</span>
+                <ArrowRight size={16} className="button__icon" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => scrollToSection('contact')}
+                className="button button--secondary button--flex"
+              >
+                <Mail size={16} />
+                <span>{t.hero.ctaSecondary}</span>
+              </button>
+
+              <a
+                download="CV_RahmatHidayat.pdf"
+                href="/assets/cv/CV_RahmatHidayat.pdf"
+                className="button button--outline button--flex"
+              >
+                <Download size={16} />
+                <span>{t.hero.ctaCV}</span>
+              </a>
+            </div>
+
+            {/* Quick Stats Strip */}
+            <div className="hero-stats-strip">
+              {t.hero.stats.map((stat, idx) => (
+                <div key={idx} className="stat-item">
+                  <span className="stat-value">{stat.value}</span>
+                  <span className="stat-label">{stat.label}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <div className="home__data">
-            <h3 className="home__title">Rahmat Hidayat</h3>
-            <h3 className="home__subtitle">
-              <span className="multiple-text">
-                {currentText}
-                <span className="typed-cursor" style={{ opacity: 0.8, marginLeft: '2px' }}>
-                  |
-                </span>
-              </span>
-            </h3>
-            <p className="home__description"></p>
-            <a
-              href="#contact"
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToSection('contact');
-              }}
-              className="button button--flex"
-            >
-              Contact Me<i className="uil uil-message button__icon"></i>
-            </a>
+          {/* Hero Visual Avatar Card */}
+          <div className="hero-visual">
+            <div className="profile-card-wrapper">
+              <div className="profile-glow-ring" aria-hidden="true" />
+              <div className="profile-card-main">
+                <img
+                  src="/assets/img/foto.png"
+                  alt="Rahmat Hidayat"
+                  className="profile-img-fill"
+                  loading="eager"
+                />
+              </div>
+
+              {/* Floating Tech Badges */}
+              <div className="floating-chip chip-1">
+                <img src="/assets/img/logo/Python-logo.png" alt="Python" />
+                <span>Python</span>
+              </div>
+
+              <div className="floating-chip chip-2">
+                <img src="/assets/img/logo/git-icon.svg" alt="Git" />
+                <span>Git & SQL</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="home__scroll">
-          <a
-            href="#about"
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToSection('about');
+        {/* Subtle Scroll Indicator */}
+        <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+          <button
+            type="button"
+            onClick={() => scrollToSection('about')}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--text-color-light)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              fontSize: 'var(--smaller-font-size)',
+              fontWeight: 500,
+              padding: '0.5rem 1rem',
+              borderRadius: '2rem',
+              transition: 'all 0.2s ease',
             }}
-            className="home__scroll-button button--flex"
+            aria-label={t.hero.scrollCaption}
           >
-            <i className="uil uil-arrow-down home__scroll-arrow"></i>
-            <span className="home__scroll-name">Showcasing My Journey and Achievements</span>
-            <i className="uil uil-arrow-down home__scroll-arrow"></i>
-          </a>
+            <span>{t.hero.scrollCaption}</span>
+            <ArrowDown size={14} style={{ animation: 'floatGentle 2s infinite ease-in-out' }} />
+          </button>
         </div>
       </div>
     </section>

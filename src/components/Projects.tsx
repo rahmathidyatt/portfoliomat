@@ -1,8 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { ExternalLink, ChevronLeft, ChevronRight, LayoutGrid, SlidersHorizontal, Clock } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { translations } from '../data/translations';
 import { PROJECTS } from '../data/portfolioData';
+import { getReadingTime } from '../utils/readingTime';
 
 export const Projects: React.FC = () => {
+  const { language } = useLanguage();
+  const t = translations[language];
+
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [viewMode, setViewMode] = useState<'slider' | 'grid'>('slider');
   const touchStartX = useRef<number | null>(null);
 
   const prevSlide = () => {
@@ -13,8 +21,10 @@ export const Projects: React.FC = () => {
     setCurrentIndex((prev) => (prev < PROJECTS.length - 1 ? prev + 1 : prev));
   };
 
-  // Keyboard navigation
+  // Keyboard navigation for carousel
   useEffect(() => {
+    if (viewMode !== 'slider') return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') {
         prevSlide();
@@ -25,7 +35,7 @@ export const Projects: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [viewMode]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -44,99 +54,206 @@ export const Projects: React.FC = () => {
     touchStartX.current = null;
   };
 
+  const currentProject = PROJECTS[currentIndex];
+  const translatedCurrent = t.projects.items.find((item) => item.id === currentProject.id);
+  const currentTitle = translatedCurrent ? translatedCurrent.title : currentProject.title;
+  const currentTagline = translatedCurrent ? translatedCurrent.tagline : currentProject.tagline;
+  const currentDescription = translatedCurrent ? translatedCurrent.description : currentProject.description;
+  const currentReadingTime = getReadingTime(currentDescription, language);
+
   return (
-    <section className="portfolio section" id="portfolio">
-      <h2 className="section__title">Project</h2>
-      <span className="section__subtitle">My Website Application Project</span>
+    <section className="section" id="portfolio">
+      <div className="container">
+        <div className="section__header">
+          <span className="section__kicker">{t.projects.kicker}</span>
+          <h2 className="section__title">{t.projects.title}</h2>
+          <p className="section__subtitle">{t.projects.subtitle}</p>
+        </div>
 
-      <div className="portfolio__container container" style={{ position: 'relative' }}>
-        <div
-          className="portfolio-slider-wrapper"
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-        >
+        {/* View Controls */}
+        <div className="projects-controls">
+          <div className="projects-mode-toggle" role="group" aria-label="Project view mode">
+            <button
+              type="button"
+              className={`projects-mode-btn ${viewMode === 'slider' ? 'active' : ''}`}
+              onClick={() => setViewMode('slider')}
+            >
+              <SlidersHorizontal size={14} />
+              <span>{t.projects.viewModeSlider}</span>
+            </button>
+            <button
+              type="button"
+              className={`projects-mode-btn ${viewMode === 'grid' ? 'active' : ''}`}
+              onClick={() => setViewMode('grid')}
+            >
+              <LayoutGrid size={14} />
+              <span>{t.projects.viewModeGrid}</span>
+            </button>
+          </div>
+
+          <span style={{ fontSize: 'var(--smaller-font-size)', color: 'var(--text-color-light)' }}>
+            {viewMode === 'slider' ? `${currentIndex + 1} / ${PROJECTS.length}` : `${PROJECTS.length} Projects`}
+          </span>
+        </div>
+
+        {/* Carousel Mode */}
+        {viewMode === 'slider' ? (
           <div
-            className="portfolio-slider-track"
-            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+            className="projects-carousel-container"
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
           >
-            {PROJECTS.map((project) => (
-              <div key={project.id} className="portfolio-slider-item">
-                <div className="portfolio__content grid">
-                  <img
-                    src={project.img}
-                    alt={project.title}
-                    className="portfolio__img"
-                  />
+            <div className="carousel-slide-content">
+              {/* Left Image View */}
+              <div className="carousel-img-wrap">
+                <img
+                  src={currentProject.img}
+                  alt={currentTitle}
+                />
+              </div>
 
-                  <div className="portfolio__data">
-                    <h3 className="portfolio__title">{project.title}</h3>
-                    <ul className="category">
-                      {project.techIcons.map((tech, idx) => (
-                        <li key={idx}>
-                          <img
-                            src={tech.src}
-                            alt={tech.alt}
-                            width="24"
-                            height="24"
-                            style={{
-                              width: '24px',
-                              height: '24px',
-                              maxWidth: '24px',
-                              maxHeight: '24px',
-                              objectFit: 'contain',
-                              display: 'block',
-                            }}
-                          />
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="portfolio__description">{project.description}</p>
-                    <a
-                      href={project.sourceCodeUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="button button--flex button--small portfolio__button"
-                    >
-                      Source Code
-                      <i className="uil uil-arrow-right button__icon"></i>
-                    </a>
+              {/* Right Content */}
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                {currentTagline && (
+                  <span className="project-tagline">{currentTagline}</span>
+                )}
+                <h3 className="project-title" style={{ fontSize: 'var(--h2-font-size)' }}>
+                  {currentTitle}
+                </h3>
+                <p className="project-desc">{currentDescription}</p>
+
+                {/* Tech stack */}
+                <div className="project-tech-icons">
+                  {currentProject.techIcons.map((tech, idx) => (
+                    <div key={idx} className="project-tech-icon" title={tech.alt}>
+                      <img src={tech.src} alt={tech.alt} />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Carousel Card Bottom Footer with Reading Time & CTA */}
+                <div className="carousel-card-footer">
+                  <div
+                    className="project-reading-time"
+                    title={`${t.projects.readingTimeLabel}: ${currentReadingTime.formattedTime} (${currentReadingTime.wordCount} ${t.projects.wordsLabel})`}
+                    aria-label={`${t.projects.readingTimeLabel}: ${currentReadingTime.formattedTime}`}
+                  >
+                    <Clock size={13} aria-hidden="true" />
+                    <span>{currentReadingTime.formattedTime}</span>
+                    <span className="reading-time-sep" aria-hidden="true">·</span>
+                    <span>{currentReadingTime.wordCount} {t.projects.wordsLabel}</span>
                   </div>
+
+                  <a
+                    href={currentProject.sourceCodeUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="button button--flex"
+                  >
+                    <span>{t.projects.sourceCode}</span>
+                    <ExternalLink size={15} />
+                  </a>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Prev / Next Arrows */}
-        <button
-          className="portfolio-nav-btn prev"
-          onClick={prevSlide}
-          disabled={currentIndex === 0}
-          aria-label="Previous Project"
-        >
-          <i className="uil uil-angle-left-b swiper-portfolio-icon"></i>
-        </button>
-
-        <button
-          className="portfolio-nav-btn next"
-          onClick={nextSlide}
-          disabled={currentIndex === PROJECTS.length - 1}
-          aria-label="Next Project"
-        >
-          <i className="uil uil-angle-right-b swiper-portfolio-icon"></i>
-        </button>
-
-        {/* Pagination Dots */}
-        <div className="swiper-pagination-container">
-          {PROJECTS.map((_, idx) => (
+            {/* Navigation Arrows */}
             <button
-              key={idx}
-              className={`swiper-pagination-bullet ${idx === currentIndex ? 'active' : ''}`}
-              onClick={() => setCurrentIndex(idx)}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
-        </div>
+              type="button"
+              className="carousel-nav-btn prev"
+              onClick={prevSlide}
+              disabled={currentIndex === 0}
+              aria-label={t.projects.prevAria}
+            >
+              <ChevronLeft size={20} />
+            </button>
+
+            <button
+              type="button"
+              className="carousel-nav-btn next"
+              onClick={nextSlide}
+              disabled={currentIndex === PROJECTS.length - 1}
+              aria-label={t.projects.nextAria}
+            >
+              <ChevronRight size={20} />
+            </button>
+
+            {/* Dot bullets */}
+            <div className="carousel-dots">
+              {PROJECTS.map((_, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`carousel-dot ${idx === currentIndex ? 'active' : ''}`}
+                  onClick={() => setCurrentIndex(idx)}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* Grid Mode */
+          <div className="projects-grid-view">
+            {PROJECTS.map((project) => {
+              const trans = t.projects.items.find((item) => item.id === project.id);
+              const title = trans ? trans.title : project.title;
+              const tagline = trans ? trans.tagline : project.tagline;
+              const desc = trans ? trans.description : project.description;
+              const readingTime = getReadingTime(desc, language);
+
+              return (
+                <article key={project.id} className="project-item-card">
+                  <div className="project-item-card__img-wrap">
+                    <img src={project.img} alt={title} loading="lazy" />
+                  </div>
+
+                  <div className="project-item-card__body">
+                    <div>
+                      {tagline && <span className="project-tagline">{tagline}</span>}
+                      <h3 className="project-title">{title}</h3>
+                      <p className="project-desc">{desc}</p>
+                    </div>
+
+                    <div>
+                      <div className="project-tech-icons">
+                        {project.techIcons.map((tech, idx) => (
+                          <div key={idx} className="project-tech-icon" title={tech.alt}>
+                            <img src={tech.src} alt={tech.alt} />
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Grid Card Footer with Action and Reading Time */}
+                      <div className="grid-card-footer">
+                        <a
+                          href={project.sourceCodeUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="button button--secondary button--small button--flex"
+                          style={{ width: '100%' }}
+                        >
+                          <span>{t.projects.sourceCode}</span>
+                          <ExternalLink size={14} />
+                        </a>
+
+                        <div
+                          className="project-reading-time"
+                          title={`${t.projects.readingTimeLabel}: ${readingTime.formattedTime} (${readingTime.wordCount} ${t.projects.wordsLabel})`}
+                          aria-label={`${t.projects.readingTimeLabel}: ${readingTime.formattedTime}`}
+                        >
+                          <Clock size={12} aria-hidden="true" />
+                          <span>{readingTime.formattedTime}</span>
+                          <span className="reading-time-sep" aria-hidden="true">·</span>
+                          <span>{readingTime.wordCount} {t.projects.wordsLabel}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );

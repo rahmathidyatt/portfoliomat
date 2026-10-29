@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { LanguageProvider } from './context/LanguageContext';
 import { Header } from './components/Header';
 import { Hero } from './components/Hero';
 import { About } from './components/About';
@@ -11,7 +12,7 @@ import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
 import { ScrollUp } from './components/ScrollUp';
 
-export const App: React.FC = () => {
+export const PortfolioApp: React.FC = () => {
   const [currentView, setCurrentView] = useState<'home' | 'certificates'>('home');
 
   // Handle URL hash or back button
@@ -75,6 +76,14 @@ export const App: React.FC = () => {
       <Footer />
       <ScrollUp />
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <LanguageProvider>
+      <PortfolioApp />
+    </LanguageProvider>
   );
 };
 

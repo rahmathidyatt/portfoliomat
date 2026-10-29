@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { ArrowUp } from 'lucide-react';
 
 export const ScrollUp: React.FC = () => {
   const [showScroll, setShowScroll] = useState(false);
 
   useEffect(() => {
     const checkScroll = () => {
-      if (window.scrollY >= 500) {
+      if (window.scrollY >= 350) {
         setShowScroll(true);
       } else {
         setShowScroll(false);
@@ -16,8 +17,7 @@ export const ScrollUp: React.FC = () => {
     return () => window.removeEventListener('scroll', checkScroll);
   }, []);
 
-  const scrollToTop = (e: React.MouseEvent) => {
-    e.preventDefault();
+  const scrollToTop = () => {
     window.scrollTo({
       top: 0,
       behavior: 'smooth',
@@ -25,14 +25,13 @@ export const ScrollUp: React.FC = () => {
   };
 
   return (
-    <a
-      href="#home"
-      className={`scroll-up ${showScroll ? 'show-scroll' : ''}`}
-      id="scrollUp"
+    <button
+      type="button"
+      className={`scroll-top-btn ${showScroll ? 'visible' : ''}`}
       onClick={scrollToTop}
       aria-label="Scroll to top"
     >
-      <i className="uil uil-arrow-up scroll-up-icon"></i>
-    </a>
+      <ArrowUp size={20} />
+    </button>
   );
 };

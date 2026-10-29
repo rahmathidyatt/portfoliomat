@@ -1,4 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import {
+  Home,
+  User,
+  Code,
+  Award,
+  Briefcase,
+  FolderGit2,
+  Mail,
+  Sun,
+  Moon,
+  Menu as MenuIcon,
+  X,
+  ArrowLeft,
+} from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { translations } from '../data/translations';
+import { LanguageToggle } from './LanguageToggle';
 
 interface HeaderProps {
   currentView: 'home' | 'certificates';
@@ -9,6 +26,9 @@ export const Header: React.FC<HeaderProps> = ({
   currentView,
   onNavigateHome,
 }) => {
+  const { language } = useLanguage();
+  const t = translations[language];
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
@@ -22,25 +42,46 @@ export const Header: React.FC<HeaderProps> = ({
     if (isDarkMode) {
       document.body.classList.add('dark-theme');
       localStorage.setItem('selected-theme', 'dark');
-      localStorage.setItem('selected-icon', 'uil-sun');
     } else {
       document.body.classList.remove('dark-theme');
       localStorage.setItem('selected-theme', 'light');
-      localStorage.setItem('selected-icon', 'uil-moon');
     }
   }, [isDarkMode]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
+
+  // Close menu on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMenuOpen(false);
+      }
+    };
+    if (isMenuOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMenuOpen]);
 
   // Handle scroll for header shadow and active link
   useEffect(() => {
     const handleScroll = () => {
-      // Header shadow
-      if (window.scrollY >= 80) {
+      if (window.scrollY >= 40) {
         setIsScrolled(true);
       } else {
         setIsScrolled(false);
       }
 
-      // Active section scroll spy
       if (currentView === 'home') {
         const sections = document.querySelectorAll('section[id]');
         const scrollY = window.pageYOffset;
@@ -48,7 +89,7 @@ export const Header: React.FC<HeaderProps> = ({
         sections.forEach((current) => {
           const sectionEl = current as HTMLElement;
           const sectionHeight = sectionEl.offsetHeight;
-          const sectionTop = sectionEl.offsetTop - 100;
+          const sectionTop = sectionEl.offsetTop - 140;
           const sectionId = sectionEl.getAttribute('id') || '';
 
           if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
@@ -73,10 +114,22 @@ export const Header: React.FC<HeaderProps> = ({
     } else {
       const element = document.getElementById(sectionId);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+        const yOffset = -75;
+        const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
       }
     }
   };
+
+  const navItems = [
+    { id: 'home', label: t.nav.home, icon: Home },
+    { id: 'about', label: t.nav.about, icon: User },
+    { id: 'skills', label: t.nav.skills, icon: Code },
+    { id: 'certificate', label: t.nav.certificate, icon: Award },
+    { id: 'background', label: t.nav.background, icon: Briefcase },
+    { id: 'portfolio', label: t.nav.project, icon: FolderGit2 },
+    { id: 'contact', label: t.nav.contact, icon: Mail },
+  ];
 
   return (
     <header className={`header ${isScrolled ? 'scroll-header' : ''}`} id="header">
@@ -88,158 +141,130 @@ export const Header: React.FC<HeaderProps> = ({
             e.preventDefault();
             handleNavClick('home');
           }}
+          aria-label="Home"
         >
-          portfolio
+          Rahmat<span className="nav__logo-dot">.</span>
         </a>
 
         {currentView === 'certificates' ? (
-          <div className="nav__btns" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="nav__btns">
             <button
               onClick={() => onNavigateHome('certificate')}
-              className="back-home button button--flex button--small"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                padding: '0.5rem 1rem',
-                borderRadius: '0.5rem',
-                fontSize: 'var(--small-font-size)',
-                cursor: 'pointer',
-              }}
+              className="button button--secondary button--small"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
             >
-              <i className="uil uil-arrow-left"></i> Back to Portfolio
+              <ArrowLeft size={16} />
+              <span>{t.nav.backToPortfolio}</span>
             </button>
-            <i
-              className={`uil ${isDarkMode ? 'uil-sun' : 'uil-moon'} dark-mode`}
-              id="mode-button"
+            <LanguageToggle />
+            <button
+              className="theme-btn"
               onClick={toggleTheme}
-              title="Toggle Theme"
-              role="button"
-              tabIndex={0}
-              aria-label="Toggle Dark Mode"
-            ></i>
+              title={t.nav.toggleTheme}
+              aria-label={t.nav.toggleTheme}
+              type="button"
+            >
+              {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
           </div>
         ) : (
           <>
-            <div className={`nav__menu ${isMenuOpen ? 'show-menu' : ''}`} id="nav-menu">
-              <ul className="nav__list grid">
-                <li className="nav__item">
-                  <a
-                    href="#home"
-                    className={`nav__link ${activeSection === 'home' ? 'active-link' : ''}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleNavClick('home');
-                    }}
-                  >
-                    <i className="uil uil-estate nav__icon"></i> Home
-                  </a>
-                </li>
-                <li className="nav__item">
-                  <a
-                    href="#about"
-                    className={`nav__link ${activeSection === 'about' ? 'active-link' : ''}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleNavClick('about');
-                    }}
-                  >
-                    <i className="uil uil-user nav__icon"></i> About
-                  </a>
-                </li>
-                <li className="nav__item">
-                  <a
-                    href="#skills"
-                    className={`nav__link ${activeSection === 'skills' ? 'active-link' : ''}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleNavClick('skills');
-                    }}
-                  >
-                    <i className="uil uil-file-alt nav__icon"></i> Skills
-                  </a>
-                </li>
-                <li className="nav__item">
-                  <a
-                    href="#certificate"
-                    className={`nav__link ${activeSection === 'certificate' ? 'active-link' : ''}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleNavClick('certificate');
-                    }}
-                  >
-                    <i className="uil uil-briefcase-alt nav__icon"></i> Certificate
-                  </a>
-                </li>
-                <li className="nav__item">
-                  <a
-                    href="#background"
-                    className={`nav__link ${activeSection === 'background' ? 'active-link' : ''}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleNavClick('background');
-                    }}
-                  >
-                    <i className="uil uil-briefcase-alt nav__icon"></i> Background
-                  </a>
-                </li>
-                <li className="nav__item">
-                  <a
-                    href="#portfolio"
-                    className={`nav__link ${activeSection === 'portfolio' ? 'active-link' : ''}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleNavClick('portfolio');
-                    }}
-                  >
-                    <i className="uil uil-scenery nav__icon"></i> Project
-                  </a>
-                </li>
-                <li className="nav__item">
-                  <a
-                    href="#contact"
-                    className={`nav__link ${activeSection === 'contact' ? 'active-link' : ''}`}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleNavClick('contact');
-                    }}
-                  >
-                    <i className="uil uil-message nav__icon"></i> Contact Me
-                  </a>
-                </li>
+            {/* Desktop Navigation Links (>= 1024px) */}
+            <div className="nav__menu-desktop">
+              <ul className="nav__list">
+                {navItems.map((item) => (
+                  <li key={item.id} className="nav__item">
+                    <a
+                      href={`#${item.id}`}
+                      className={`nav__link ${activeSection === item.id ? 'active-link' : ''}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleNavClick(item.id);
+                      }}
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
               </ul>
-              <i
-                className="uil uil-times nav__close"
-                id="nav-close"
+            </div>
+
+            {/* Mobile / Tablet Compact Navigation Dropdown (< 1024px) */}
+            {isMenuOpen && (
+              <div
+                className="nav__backdrop"
                 onClick={() => setIsMenuOpen(false)}
-                role="button"
-                tabIndex={0}
-                aria-label="Close menu"
-              ></i>
+                aria-hidden="true"
+              />
+            )}
+
+            <div
+              className={`nav__menu-mobile ${isMenuOpen ? 'show-menu' : ''}`}
+              id="nav-menu"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Navigation Menu"
+            >
+              <div className="nav__menu-mobile-header">
+                <span className="nav__menu-mobile-title">{t.nav.menu}</span>
+                <button
+                  className="nav__close"
+                  onClick={() => setIsMenuOpen(false)}
+                  type="button"
+                  aria-label={t.nav.closeMenu}
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Compact 2-column grid of sub-menus */}
+              <div className="nav__mobile-grid">
+                {navItems.map((item, index) => {
+                  const Icon = item.icon;
+                  const isActive = activeSection === item.id;
+                  const isContact = item.id === 'contact';
+
+                  return (
+                    <a
+                      key={item.id}
+                      href={`#${item.id}`}
+                      className={`nav__mobile-item ${isActive ? 'active' : ''} ${isContact && index % 2 === 0 ? 'span-full' : ''}`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleNavClick(item.id);
+                      }}
+                    >
+                      <Icon size={16} className="nav__mobile-icon" />
+                      <span className="nav__mobile-label">{item.label}</span>
+                    </a>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="nav__btns">
-              {/* DARK MODE */}
-              <i
-                className={`uil ${isDarkMode ? 'uil-sun' : 'uil-moon'} dark-mode`}
-                id="mode-button"
-                onClick={toggleTheme}
-                title="Toggle Theme"
-                role="button"
-                tabIndex={0}
-                aria-label="Toggle Dark Mode"
-              ></i>
+              <LanguageToggle />
 
-              <div
+              <button
+                className="theme-btn"
+                onClick={toggleTheme}
+                title={t.nav.toggleTheme}
+                aria-label={t.nav.toggleTheme}
+                type="button"
+              >
+                {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+              </button>
+
+              <button
                 className="nav__toggle"
                 id="nav-toggle"
-                onClick={() => setIsMenuOpen(true)}
-                role="button"
-                tabIndex={0}
-                aria-label="Open menu"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                type="button"
+                aria-label={isMenuOpen ? t.nav.closeMenu : t.nav.menu}
+                aria-expanded={isMenuOpen}
               >
-                <i className="uil uil-apps"></i>
-              </div>
+                {isMenuOpen ? <X size={20} /> : <MenuIcon size={20} />}
+              </button>
             </div>
           </>
         )}

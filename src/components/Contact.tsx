@@ -1,7 +1,13 @@
 import React, { useState, useRef } from 'react';
 import emailjs from '@emailjs/browser';
+import { Mail, MapPin, CheckCircle, Copy, Send, Clock } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { translations } from '../data/translations';
 
 export const Contact: React.FC = () => {
+  const { language } = useLanguage();
+  const t = translations[language];
+
   const formRef = useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({
     user_name: '',
@@ -14,6 +20,13 @@ export const Contact: React.FC = () => {
   }>({ text: '', type: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText(t.contact.emailValue);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -28,7 +41,7 @@ export const Contact: React.FC = () => {
     setShowNotification(true);
     setTimeout(() => {
       setShowNotification(false);
-    }, 4200);
+    }, 4500);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +53,7 @@ export const Contact: React.FC = () => {
       !formData.user_message.trim()
     ) {
       setStatusMessage({
-        text: 'Field input tidak boleh kosong',
+        text: t.contact.errorEmpty,
         type: 'red',
       });
       return;
@@ -50,7 +63,7 @@ export const Contact: React.FC = () => {
 
     setIsSubmitting(true);
     setStatusMessage({
-      text: 'Mengirim pesan...',
+      text: t.contact.sendingStatus,
       type: 'blue',
     });
 
@@ -63,7 +76,7 @@ export const Contact: React.FC = () => {
       );
 
       setStatusMessage({
-        text: 'Pesan telah dikirim',
+        text: t.contact.successStatus,
         type: 'green',
       });
       triggerToastNotification();
@@ -79,9 +92,8 @@ export const Contact: React.FC = () => {
       }, 5000);
     } catch (err) {
       console.warn('EmailJS error:', err);
-      // Fallback: If EmailJS quota or network fails, inform user gracefully
       setStatusMessage({
-        text: 'Pengiriman pesan belum berhasil. Anda juga dapat menghubungi langsung ke amathmrs02@gmail.com',
+        text: t.contact.errorStatus,
         type: 'red',
       });
     } finally {
@@ -90,150 +102,183 @@ export const Contact: React.FC = () => {
   };
 
   return (
-    <section className="contact section" id="contact">
-      <h2 className="section__title">Contact Me</h2>
-      <span className="section__subtitle"></span>
+    <section className="section" id="contact">
+      <div className="container">
+        <div className="section__header">
+          <span className="section__kicker">{t.contact.kicker}</span>
+          <h2 className="section__title">{t.contact.title}</h2>
+          <p className="section__subtitle">{t.contact.subtitle}</p>
+        </div>
 
-      <div className="contact__container container grid">
-        <div>
-          <div className="contact__information">
-            <i className="uil uil-envelope contact__icon"></i>
-            <div>
-              <h3 className="contact__title">E-Mail</h3>
-              <a className="contact__subtitle" href="mailto:amathmrs02@gmail.com">
-                amathmrs02@gmail.com
-              </a>
+        <div className="contact-grid">
+          {/* Contact Information Cards */}
+          <div className="contact-info-panel">
+            <div className="contact-info-card">
+              <div className="contact-info-card__icon">
+                <Mail size={22} />
+              </div>
+              <div style={{ flexGrow: 1 }}>
+                <span className="contact-info-card__title">{t.contact.emailTitle}</span>
+                <div className="contact-info-card__value">
+                  <a href={`mailto:${t.contact.emailValue}`} style={{ color: 'inherit' }}>
+                    {t.contact.emailValue}
+                  </a>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCopyEmail}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: '0.2rem 0',
+                    marginTop: '0.35rem',
+                    cursor: 'pointer',
+                    fontSize: 'var(--smaller-font-size)',
+                    color: copied ? '#10b981' : 'var(--first-color)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  {copied ? <CheckCircle size={13} /> : <Copy size={13} />}
+                  <span>{copied ? t.contact.copiedEmail : t.contact.copyEmail}</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="contact-info-card">
+              <div className="contact-info-card__icon">
+                <MapPin size={22} />
+              </div>
+              <div>
+                <span className="contact-info-card__title">{t.contact.locationTitle}</span>
+                <div className="contact-info-card__value">{t.contact.locationValue}</div>
+              </div>
+            </div>
+
+            <div className="contact-info-card">
+              <div className="contact-info-card__icon">
+                <Clock size={22} />
+              </div>
+              <div>
+                <span className="contact-info-card__title">{t.contact.statusTitle}</span>
+                <div className="contact-info-card__value" style={{ fontSize: 'var(--small-font-size)', fontWeight: 500 }}>
+                  {t.contact.statusValue}
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="contact__information">
-            <i className="uil uil-map-marker contact__icon"></i>
-            <div>
-              <h3 className="contact__title">Location</h3>
-              <span className="contact__subtitle">Indonesia - DKI Jakarta</span>
-            </div>
+          {/* Form Panel */}
+          <div className="contact-form-panel">
+            <form
+              ref={formRef}
+              id="contact-form"
+              onSubmit={handleSubmit}
+            >
+              <div className="form-group-row">
+                <div className="form-field" style={{ marginBottom: 0 }}>
+                  <label htmlFor="contact-name">{t.contact.nameLabel}</label>
+                  <input
+                    type="text"
+                    id="contact-name"
+                    name="user_name"
+                    className="form-input"
+                    placeholder={t.contact.namePlaceholder}
+                    value={formData.user_name}
+                    onChange={handleChange}
+                    autoComplete="name"
+                    required
+                  />
+                </div>
+
+                <div className="form-field" style={{ marginBottom: 0 }}>
+                  <label htmlFor="contact-email">{t.contact.emailLabel}</label>
+                  <input
+                    type="email"
+                    id="contact-email"
+                    name="user_email"
+                    className="form-input"
+                    placeholder={t.contact.emailPlaceholder}
+                    value={formData.user_email}
+                    onChange={handleChange}
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="form-field">
+                <label htmlFor="user-message">{t.contact.messageLabel}</label>
+                <textarea
+                  id="user-message"
+                  name="user_message"
+                  rows={5}
+                  className="form-textarea"
+                  placeholder={t.contact.messagePlaceholder}
+                  value={formData.user_message}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              {statusMessage.text && (
+                <div
+                  className={`form-status-alert ${statusMessage.type ? `color-${statusMessage.type}` : ''}`}
+                  role="status"
+                  aria-live="polite"
+                >
+                  {statusMessage.text}
+                </div>
+              )}
+
+              <div>
+                <button
+                  type="submit"
+                  className="button button--flex"
+                  disabled={isSubmitting}
+                  style={{ width: '100%', cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
+                >
+                  <span>{isSubmitting ? t.contact.sendingButton : t.contact.sendButton}</span>
+                  <Send size={16} />
+                </button>
+              </div>
+            </form>
           </div>
         </div>
 
-        <form
-          ref={formRef}
-          className="contact__form grid"
-          id="contact-form"
-          onSubmit={handleSubmit}
-        >
-          <div className="contact__inputs grid">
-            <div className="contact__content">
-              <label htmlFor="contact-name" className="contact__label">
-                Name
-              </label>
-              <input
-                type="text"
-                className="contact__input"
-                id="contact-name"
-                name="user_name"
-                value={formData.user_name}
-                onChange={handleChange}
-                autoComplete="name"
-                required
-              />
-            </div>
-            <div className="contact__content">
-              <label htmlFor="contact-email" className="contact__label">
-                E-Mail
-              </label>
-              <input
-                type="email"
-                className="contact__input"
-                id="contact-email"
-                name="user_email"
-                value={formData.user_email}
-                onChange={handleChange}
-                autoComplete="email"
-                required
-              />
-            </div>
+        {/* Global Toast Notification */}
+        {showNotification && (
+          <div
+            role="status"
+            aria-live="polite"
+            style={{
+              position: 'fixed',
+              top: '24px',
+              left: '50%',
+              zIndex: 999999,
+              maxWidth: 'calc(100vw - 32px)',
+              padding: '12px 24px',
+              borderRadius: '2rem',
+              fontSize: '14px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: '#065f46',
+              background: '#ecfdf5',
+              border: '1px solid rgba(16, 185, 129, 0.4)',
+              boxShadow: '0 20px 40px rgba(0, 0, 0, 0.15)',
+              transform: 'translate(-50%, 0)',
+              animation: 'fadeIn 0.3s ease',
+            }}
+          >
+            <CheckCircle size={16} />
+            <span>{t.contact.toastSuccess}</span>
           </div>
-
-          <div className="contact__content">
-            <label htmlFor="user-message" className="contact__label">
-              Message
-            </label>
-            <textarea
-              name="user_message"
-              id="user-message"
-              rows={7}
-              className="contact__input"
-              value={formData.user_message}
-              onChange={handleChange}
-              required
-            ></textarea>
-          </div>
-
-          {statusMessage.text && (
-            <p
-              className={`contact__message ${
-                statusMessage.type ? `color-${statusMessage.type}` : ''
-              }`}
-              id="contact-message"
-              role="status"
-              aria-live="polite"
-              style={{
-                padding: '0.75rem 1rem',
-                borderRadius: '0.5rem',
-                fontSize: 'var(--small-font-size)',
-                marginBottom: '1rem',
-              }}
-            >
-              {statusMessage.text}
-            </p>
-          )}
-
-          <div>
-            <button
-              type="submit"
-              name="submit"
-              className="button contact__button button--flex"
-              id="contact-button"
-              disabled={isSubmitting}
-              style={{ cursor: isSubmitting ? 'not-allowed' : 'pointer' }}
-            >
-              <span>{isSubmitting ? 'Sending...' : 'Send Message'}</span>
-              <i className="uil uil-message button__icon"></i>
-            </button>
-          </div>
-        </form>
+        )}
       </div>
-
-      {/* Legacy/Floating Toast Notification */}
-      {showNotification && (
-        <div
-          id="email-success-notification"
-          role="status"
-          aria-live="polite"
-          style={{
-            position: 'fixed',
-            top: '24px',
-            left: '50%',
-            zIndex: 999999,
-            maxWidth: 'calc(100vw - 32px)',
-            padding: '14px 22px',
-            borderRadius: '16px',
-            fontFamily: 'inherit',
-            fontSize: '15px',
-            fontWeight: 600,
-            lineHeight: 1.5,
-            textAlign: 'center',
-            color: '#166534',
-            background: '#dcfce7',
-            border: '1px solid rgba(34, 197, 94, .45)',
-            boxShadow: '0 20px 50px rgba(15, 23, 42, .22)',
-            transform: 'translate(-50%, 0)',
-            transition: 'opacity .25s ease, transform .25s ease',
-          }}
-        >
-          Pesan berhasil dikirim
-        </div>
-      )}
     </section>
   );
 };
