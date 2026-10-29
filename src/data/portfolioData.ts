@@ -1,0 +1,235 @@
+import { SoftSkill, TechSkill, CertificateItem, QualificationItem, ProjectItem } from '../types';
+
+export const SOFT_SKILLS: SoftSkill[] = [
+  { name: 'Leadership & Team Work' },
+  { name: 'Fast Learning' },
+  { name: 'Critical & Analytical Thinking' },
+  { name: 'Good Time Management' },
+  { name: 'Problem Solving', isHiddenByDefault: true },
+  { name: 'Collaborative', isHiddenByDefault: true },
+];
+
+export const TECH_SKILLS: TechSkill[] = [
+  {
+    name: 'Python',
+    level: 'Intermediate',
+    logo: '/assets/img/logo/Python-logo.png',
+  },
+  {
+    name: 'MySQL',
+    level: 'Beginner',
+    logo: '/assets/img/logo/mysql-3.svg',
+  },
+  {
+    name: 'Git',
+    level: 'Intermediate',
+    logo: '/assets/img/logo/git-icon.svg',
+  },
+  {
+    name: 'CodeIgniter',
+    level: 'Beginner',
+    logo: '/assets/img/logo/codeigniter.svg',
+  },
+  {
+    name: 'HTML',
+    level: 'Intermediate',
+    logo: '/assets/img/logo/html-1.svg',
+    isHiddenByDefault: true,
+  },
+  {
+    name: 'CSS',
+    level: 'Intermediate',
+    logo: '/assets/img/logo/css-3.svg',
+    isHiddenByDefault: true,
+  },
+  {
+    name: 'JavaScript',
+    level: 'Beginner',
+    logo: '/assets/img/logo/logo-javascript.svg',
+    isHiddenByDefault: true,
+  },
+  {
+    name: 'Excel',
+    level: 'Intermediate',
+    logo: '/assets/img/logo/Microsoft-Excel.jpg',
+    isHiddenByDefault: true,
+  },
+  {
+    name: 'Word',
+    level: 'Advanced',
+    logo: '/assets/img/logo/Microsoft-Word.png',
+    isHiddenByDefault: true,
+  },
+  {
+    name: 'PowerPoint',
+    level: 'Intermediate',
+    logo: '/assets/img/logo/Microsoft-PowerPoint.png',
+    isHiddenByDefault: true,
+  },
+];
+
+export const CERTIFICATES: CertificateItem[] = [
+  {
+    id: 'analisis-data-python',
+    title: 'Dicoding: Belajar Analisis Data dengan Python',
+    date: '13 September 2023',
+    issuer: 'Dicoding',
+    img: '/assets/sertifikat/img/Analisis-Data-Python.jpg',
+    pdf: '/assets/sertifikat/pdf/Analisis-Data-Python.pdf',
+    isFeatured: true,
+  },
+  {
+    id: 'data-science',
+    title: 'Dicoding: Belajar Dasar Data Science',
+    date: '22 September 2023',
+    issuer: 'Dicoding',
+    img: '/assets/sertifikat/img/Data-Science.jpg',
+    pdf: '/assets/sertifikat/pdf/Data-Science.pdf',
+    isFeatured: true,
+  },
+  {
+    id: 'course-html',
+    title: 'Sololearn: Course Certificate HTML',
+    date: '25 August 2023',
+    issuer: 'Sololearn',
+    img: '/assets/sertifikat/img/Cource-HTML.jpg',
+    pdf: '/assets/sertifikat/pdf/Cource-HTML.pdf',
+    isFeatured: true,
+  },
+  {
+    id: 'course-python',
+    title: 'Sololearn: Introduction to Python',
+    date: '03 September 2023',
+    issuer: 'Sololearn',
+    img: '/assets/sertifikat/img/Course-Python.jpg',
+    pdf: '/assets/sertifikat/pdf/Course-Python.pdf',
+    isFeatured: true,
+  },
+  {
+    id: 'pcap-programming',
+    title: 'PCAP: Programming Essentials In Python',
+    date: '31 August 2021',
+    issuer: 'Cisco Networking Academy',
+    img: '/assets/sertifikat/img/PCAP-Programming.jpg',
+    pdf: '/assets/sertifikat/pdf/PCAP-Programming.pdf',
+    isFeatured: false,
+  },
+  {
+    id: 'man-it',
+    title: 'HIMSI: Build Beautiful Mobile with Flutter Widgets',
+    date: '29 August 2021',
+    issuer: 'Himpunan Mahasiswa SI',
+    img: '/assets/sertifikat/img/Man-IT.jpg',
+    pdf: '/assets/sertifikat/pdf/Man-IT.pdf',
+    isFeatured: false,
+  },
+  {
+    id: 'ketua-osis',
+    title: 'OSIS: Sertifikat Penghargaan',
+    date: '02 September 2019',
+    issuer: 'OSIS',
+    img: '/assets/sertifikat/img/Ketua-osis.jpg',
+    pdf: '/assets/sertifikat/pdf/Ketua-osis.pdf',
+    isFeatured: false,
+  },
+  {
+    id: 'perjusami',
+    title: 'Scout: Perjusami Rayon II Polda Sulawesi Tenggara',
+    date: '27 August 2019',
+    issuer: 'Scout',
+    img: '/assets/sertifikat/img/Perjusami.jpg',
+    pdf: '/assets/sertifikat/pdf/Perjusami.pdf',
+    isFeatured: false,
+  },
+];
+
+export const EDUCATION_QUALIFICATIONS: QualificationItem[] = [
+  {
+    title: 'Universitas Bina Sarana Informatika',
+    subtitle: 'Information Systems',
+    calendar: '2020 - 2024',
+    type: 'education',
+    isFirst: true,
+  },
+  {
+    title: 'SMA Negeri 05 Konawe Selatan',
+    subtitle: 'Social Sciences',
+    calendar: '2017 - 2020',
+    type: 'education',
+    isFirst: false,
+  },
+];
+
+export const WORK_QUALIFICATIONS: QualificationItem[] = [
+  {
+    title: 'Himpunan Mahasiswa Sistem Informasi',
+    subtitle: 'Coordinator of Communication and Information Division',
+    calendar: '2021 - 2022',
+    type: 'work',
+    isFirst: true,
+  },
+  {
+    title: 'Badan Eksekutif Mahasiswa FTI',
+    subtitle: 'Vice Governor of the Student Executive Body',
+    calendar: '2022 - 2023',
+    type: 'work',
+    isFirst: false,
+  },
+];
+
+export const PROJECTS: ProjectItem[] = [
+  {
+    id: 'portfolio-1',
+    title: 'Portfolio',
+    description: 'Simple Portfolio Application Website',
+    img: '/assets/img/project/Portofolio.png',
+    techIcons: [
+      { src: '/assets/img/logo/html-1.svg', alt: 'HTML' },
+      { src: '/assets/img/logo/css-3.svg', alt: 'CSS' },
+      { src: '/assets/img/logo/logo-javascript.svg', alt: 'JavaScript' },
+    ],
+    sourceCodeUrl: 'https://github.com/rahmathidyatt/',
+  },
+  {
+    id: 'portfolio-2',
+    title: 'Portfolio II',
+    description: 'Simple Portfolio Application Website II',
+    img: '/assets/img/project/Portofolio-II.png',
+    techIcons: [
+      { src: '/assets/img/logo/html-1.svg', alt: 'HTML' },
+      { src: '/assets/img/logo/css-3.svg', alt: 'CSS' },
+      { src: '/assets/img/logo/bootstrap-5-1.svg', alt: 'Bootstrap' },
+      { src: '/assets/img/logo/jquery-1.svg', alt: 'jQuery' },
+      { src: '/assets/img/logo/logo-javascript.svg', alt: 'JavaScript' },
+    ],
+    sourceCodeUrl: 'https://github.com/rahmathidyatt/',
+  },
+  {
+    id: 'ecommerce',
+    title: 'E-Commerce Website',
+    description: 'Project for Group Final Exam: Developing a Third-Party E-Commerce Website.',
+    img: '/assets/img/project/uas.png',
+    techIcons: [
+      { src: '/assets/img/logo/html-1.svg', alt: 'HTML' },
+      { src: '/assets/img/logo/css-3.svg', alt: 'CSS' },
+      { src: '/assets/img/logo/php-1.svg', alt: 'PHP' },
+      { src: '/assets/img/logo/codeigniter.svg', alt: 'CodeIgniter' },
+    ],
+    sourceCodeUrl: 'https://github.com/rahmathidyatt/',
+  },
+  {
+    id: 'pustaka-booking',
+    title: 'Pustaka Booking',
+    description: 'Web Programming Course Project: Creating a Book Borrowing Application.',
+    img: '/assets/img/project/Pustaka-Booking.png',
+    techIcons: [
+      { src: '/assets/img/logo/html-1.svg', alt: 'HTML' },
+      { src: '/assets/img/logo/css-3.svg', alt: 'CSS' },
+      { src: '/assets/img/logo/php-1.svg', alt: 'PHP' },
+      { src: '/assets/img/logo/jquery-1.svg', alt: 'jQuery' },
+      { src: '/assets/img/logo/JavaScript.jpg', alt: 'JavaScript' },
+      { src: '/assets/img/logo/codeigniter.svg', alt: 'CodeIgniter' },
+    ],
+    sourceCodeUrl: 'https://github.com/rahmathidyatt/',
+  },
+];
