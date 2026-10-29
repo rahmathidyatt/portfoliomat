@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { Volume2, VolumeX, Play, Pause, Music, Disc } from 'lucide-react';
+import { Volume2, VolumeX, Play, Pause, Disc } from 'lucide-react';
 import { SempurnaAudioPlayer } from '../utils/sempurnaAudio';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -10,28 +11,28 @@ export const BackgroundMusic: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [hasInteracted, setHasInteracted] = useState(false);
 
   useEffect(() => {
     const player = new SempurnaAudioPlayer((playing, muted) => {
       setIsPlaying(playing);
       setIsMuted(muted);
     });
+
     playerRef.current = player;
 
-    // Attempt automatic autoplay upon opening
+    // Attempt automatic playback
     try {
       player.play();
-    } catch (e) {
-      // Browser blocked autoplay
+    } catch {
+      // Autoplay may be blocked by the browser
     }
 
-    // Modern browsers require user gesture to unblock audio
+    // Retry playback after the first user interaction
     const handleFirstGesture = () => {
       if (playerRef.current && !playerRef.current.getPlaying()) {
         playerRef.current.play();
       }
-      setHasInteracted(true);
+
       window.removeEventListener('pointerdown', handleFirstGesture);
       window.removeEventListener('touchstart', handleFirstGesture);
       window.removeEventListener('keydown', handleFirstGesture);
@@ -48,6 +49,8 @@ export const BackgroundMusic: React.FC = () => {
       window.removeEventListener('touchstart', handleFirstGesture);
       window.removeEventListener('keydown', handleFirstGesture);
       window.removeEventListener('scroll', handleFirstGesture);
+
+      playerRef.current = null;
       player.destroy();
     };
   }, []);
@@ -73,7 +76,7 @@ export const BackgroundMusic: React.FC = () => {
       aria-label="Background Music: Sempurna by Andra and The Backbone"
     >
       <div className="bg-music-inner">
-        {/* Animated Disc / Music Icon */}
+        {/* Animated Disc */}
         <button
           type="button"
           className="bg-music-disc-btn"
@@ -98,19 +101,22 @@ export const BackgroundMusic: React.FC = () => {
           )}
         </button>
 
-        {/* Track details (visible when expanded or on hover) */}
+        {/* Track information */}
         <div className="bg-music-info">
           <div className="bg-music-title-wrap">
             <span className="bg-music-title">Sempurna</span>
             <span className="bg-music-dot">·</span>
             <span className="bg-music-artist">Andra & The Backbone</span>
           </div>
+
           <span className="bg-music-tag">
-            {language === 'id' ? 'Aransemen Akustik' : 'Acoustic Arrangement'}
+            {language === 'id'
+              ? 'Aransemen Akustik'
+              : 'Acoustic Arrangement'}
           </span>
         </div>
 
-        {/* Controls */}
+        {/* Playback controls */}
         <div className="bg-music-actions">
           <button
             type="button"
