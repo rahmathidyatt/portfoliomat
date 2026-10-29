@@ -38,7 +38,6 @@ export const Certificates: React.FC<CertificatesProps> = ({ onViewAllCertificate
     <section className="section" id="certificate">
       <div className="container">
         <div className="section__header">
-          <span className="section__kicker">{t.certificates.kicker}</span>
           <h2 className="section__title">{t.certificates.title}</h2>
           <p className="section__subtitle">{t.certificates.subtitle}</p>
         </div>

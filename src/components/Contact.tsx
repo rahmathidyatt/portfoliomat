@@ -105,7 +105,6 @@ export const Contact: React.FC = () => {
     <section className="section" id="contact">
       <div className="container">
         <div className="section__header">
-          <span className="section__kicker">{t.contact.kicker}</span>
           <h2 className="section__title">{t.contact.title}</h2>
           <p className="section__subtitle">{t.contact.subtitle}</p>
         </div>

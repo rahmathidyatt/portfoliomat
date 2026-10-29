@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Home,
   User,
-  Code,
   Award,
   Briefcase,
   FolderGit2,
@@ -124,7 +123,6 @@ export const Header: React.FC<HeaderProps> = ({
   const navItems = [
     { id: 'home', label: t.nav.home, icon: Home },
     { id: 'about', label: t.nav.about, icon: User },
-    { id: 'skills', label: t.nav.skills, icon: Code },
     { id: 'certificate', label: t.nav.certificate, icon: Award },
     { id: 'background', label: t.nav.background, icon: Briefcase },
     { id: 'portfolio', label: t.nav.project, icon: FolderGit2 },

@@ -16,7 +16,7 @@ export const Footer: React.FC = () => {
       <div className="container">
         <div className="footer-top">
           <div className="footer-brand">
-            <h2>Rahmat Hidayat<span style={{ color: 'var(--first-color)' }}>.</span></h2>
+            <h2>{t.footer.brandTitle}<span style={{ color: 'var(--first-color)' }}>.</span></h2>
             <p>{t.footer.tagline}</p>
           </div>
 

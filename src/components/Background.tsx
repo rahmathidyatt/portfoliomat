@@ -15,7 +15,6 @@ export const Background: React.FC = () => {
     <section className="section" id="background">
       <div className="container">
         <div className="section__header">
-          <span className="section__kicker">{t.background.kicker}</span>
           <h2 className="section__title">{t.background.title}</h2>
           <p className="section__subtitle">{t.background.subtitle}</p>
         </div>

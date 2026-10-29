@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowDown, ArrowRight, Download, Mail, MapPin } from 'lucide-react';
+import { ArrowDown, ArrowRight, MapPin } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../data/translations';
 
@@ -54,7 +54,7 @@ export const Hero: React.FC = () => {
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
-      const yOffset = -80;
+      const yOffset = -75;
       const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
     }
@@ -88,8 +88,7 @@ export const Hero: React.FC = () => {
               </div>
             </div>
 
-            <p className="hero-description">{t.hero.description}</p>
-
+            {/* Action button - non-repetitive primary CTA */}
             <div className="hero-actions">
               <button
                 type="button"
@@ -99,24 +98,6 @@ export const Hero: React.FC = () => {
                 <span>{t.hero.ctaPrimary}</span>
                 <ArrowRight size={16} className="button__icon" />
               </button>
-
-              <button
-                type="button"
-                onClick={() => scrollToSection('contact')}
-                className="button button--secondary button--flex"
-              >
-                <Mail size={16} />
-                <span>{t.hero.ctaSecondary}</span>
-              </button>
-
-              <a
-                download="CV_RahmatHidayat.pdf"
-                href="/assets/cv/CV_RahmatHidayat.pdf"
-                className="button button--outline button--flex"
-              >
-                <Download size={16} />
-                <span>{t.hero.ctaCV}</span>
-              </a>
             </div>
 
             {/* Quick Stats Strip */}
@@ -158,7 +139,7 @@ export const Hero: React.FC = () => {
         </div>
 
         {/* Subtle Scroll Indicator */}
-        <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+        <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
           <button
             type="button"
             onClick={() => scrollToSection('about')}

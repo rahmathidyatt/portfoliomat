@@ -218,7 +218,8 @@ export const PROJECTS: ProjectItem[] = [
       { src: '/assets/img/logo/css-3.svg', alt: 'CSS' },
       { src: '/assets/img/logo/logo-javascript.svg', alt: 'JavaScript' },
     ],
-    sourceCodeUrl: 'https://github.com/rahmathidyatt/',
+    sourceCodeUrl: 'https://github.com/rahmathidyatt/Portfolio_I',
+    repoName: 'Portfolio_I',
   },
   {
     id: 'portfolio-2',
@@ -234,7 +235,8 @@ export const PROJECTS: ProjectItem[] = [
       { src: '/assets/img/logo/jquery-1.svg', alt: 'jQuery' },
       { src: '/assets/img/logo/logo-javascript.svg', alt: 'JavaScript' },
     ],
-    sourceCodeUrl: 'https://github.com/rahmathidyatt/',
+    sourceCodeUrl: 'https://github.com/rahmathidyatt/Portfolio_II',
+    repoName: 'Portfolio_II',
   },
   {
     id: 'ecommerce',
@@ -249,7 +251,8 @@ export const PROJECTS: ProjectItem[] = [
       { src: '/assets/img/logo/php-1.svg', alt: 'PHP' },
       { src: '/assets/img/logo/codeigniter.svg', alt: 'CodeIgniter' },
     ],
-    sourceCodeUrl: 'https://github.com/rahmathidyatt/',
+    sourceCodeUrl: 'https://github.com/rahmathidyatt/E-Commerce_Website',
+    repoName: 'E-Commerce_Website',
   },
   {
     id: 'pustaka-booking',
@@ -266,6 +269,7 @@ export const PROJECTS: ProjectItem[] = [
       { src: '/assets/img/logo/JavaScript.jpg', alt: 'JavaScript' },
       { src: '/assets/img/logo/codeigniter.svg', alt: 'CodeIgniter' },
     ],
-    sourceCodeUrl: 'https://github.com/rahmathidyatt/',
+    sourceCodeUrl: 'https://github.com/rahmathidyatt/Pustaka_Booking',
+    repoName: 'Pustaka_Booking',
   },
 ];
