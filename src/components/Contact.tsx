@@ -56,10 +56,10 @@ export const Contact: React.FC = () => {
 
     try {
       await emailjs.sendForm(
-        'service_39oxs8i',
-        'template_lykg67g',
+        import.meta.env.VITE_EMAILJS_SERVICE_ID || 'service_39oxs8i',
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'template_lykg67g',
         formRef.current,
-        'QvQIyg2CW3CKLIkS9'
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'QvQIyg2CW3CKLIkS9'
       );
 
       setStatusMessage({
