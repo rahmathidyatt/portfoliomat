@@ -84,6 +84,8 @@ export interface GitHubContributionDay {
   level: 0 | 1 | 2 | 3 | 4;
 }
 
+export type GitHubDataSource = 'live' | 'cached' | 'fallback' | 'unavailable';
+
 export interface GitHubContributionData {
   totalContributions: number;
   currentStreak: number;
@@ -93,7 +95,8 @@ export interface GitHubContributionData {
     count: number;
   };
   contributions: GitHubContributionDay[];
-  lastSyncedAt: Date;
+  source: GitHubDataSource;
+  lastSyncedAt: Date | null;
 }
 
 export type TechCategory = 'language' | 'framework' | 'database' | 'ai' | 'tool';
