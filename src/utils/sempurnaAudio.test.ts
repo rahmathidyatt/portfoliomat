@@ -10,7 +10,6 @@ import {
 } from './sempurnaAudio';
 import { translations } from '../data/translations';
 import {
-  generateFallbackContributions,
   calculateContributionStats,
   formatContributionDate,
 } from '../services/githubService';
@@ -63,8 +62,3 @@ test('GitHub contribution statistics use deterministic sample data', () => {
   assert.equal(formatContributionDate('2025-12-02', 'en'), 'Tuesday, Dec 2, 2025');
 });
 
-test('fallback contributions are generated for a rolling 365-day period', () => {
-  const days = generateFallbackContributions();
-  assert.equal(days.length, 365);
-  assert.ok(days.every((day) => /^\d{4}-\d{2}-\d{2}$/.test(day.date)));
-});

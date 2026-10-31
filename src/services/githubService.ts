@@ -1,11 +1,140 @@
-import { GitHubRepo, GitHubUserProfile, GitHubContributionDay, GitHubContributionData } from '../types';
+import { GitHubRepo, GitHubUserProfile, GitHubContributionDay, GitHubContributionData, GitHubDataSource } from '../types';
 
 export const GITHUB_USERNAME = 'rahmathidyatt';
-const CACHE_KEY_REPOS = 'rahmathidyatt_github_repos_v2';
-const CACHE_KEY_PROFILE = 'rahmathidyatt_github_profile_v2';
-const CACHE_KEY_CONTRIBUTIONS = 'rahmathidyatt_github_contributions_v2';
-const CACHE_KEY_TIMESTAMP = 'rahmathidyatt_github_synced_at';
-const CACHE_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+const CACHE_KEY_REPOS = 'rahmathidyatt_github_repos_v3';
+const CACHE_KEY_PROFILE = 'rahmathidyatt_github_profile_v3';
+const CACHE_KEY_CONTRIBUTIONS = 'rahmathidyatt_github_contributions_v3';
+const CACHE_KEY_REPOS_TIME = 'rahmathidyatt_github_repos_time_v3';
+const CACHE_KEY_PROFILE_TIME = 'rahmathidyatt_github_profile_time_v3';
+const CACHE_KEY_CONTRIBUTIONS_TIME = 'rahmathidyatt_github_contributions_time_v3';
+const CACHE_DURATION_MS = 15 * 60 * 1000;
+
+type ResourceResult<T> = {
+  value: T;
+  source: GitHubDataSource;
+  lastSyncedAt: Date | null;
+};
+
+function readCache<T>(key: string, timeKey: string, isValid: (value: unknown) => value is T): { value: T; time: number } | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(key);
+    const rawTime = localStorage.getItem(timeKey);
+    if (raw === null || rawTime === null) return null;
+    const time = Number(rawTime);
+    if (!Number.isFinite(time) || time <= 0 || time > Date.now() + 60_000) return null;
+    const value: unknown = JSON.parse(raw);
+    return isValid(value) ? { value, time } : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache<T>(key: string, timeKey: string, value: T, time: number): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    localStorage.setItem(timeKey, String(time));
+  } catch {
+    // Browser storage can be disabled or full.
+  }
+}
+
+async function requestJson(url: string, timeoutMs = 8000): Promise<unknown> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { signal: controller.signal, headers: { Accept: 'application/vnd.github+json' } });
+    if (!response.ok) throw new Error('GitHub data request failed with HTTP ' + response.status);
+    return await response.json();
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function loadResource<T>(
+  url: string,
+  key: string,
+  timeKey: string,
+  parse: (raw: unknown) => T,
+  isValid: (raw: unknown) => raw is T,
+  fallback: T,
+  forceRefresh: boolean,
+): Promise<ResourceResult<T>> {
+  const cached = readCache(key, timeKey, isValid);
+  if (!forceRefresh && cached && Date.now() - cached.time < CACHE_DURATION_MS) {
+    return { value: cached.value, source: 'cached', lastSyncedAt: new Date(cached.time) };
+  }
+
+  try {
+    const value = parse(await requestJson(url));
+    const time = Date.now();
+    writeCache(key, timeKey, value, time);
+    return { value, source: 'live', lastSyncedAt: new Date(time) };
+  } catch (error) {
+    console.warn('GitHub resource unavailable:', error);
+    if (cached) return { value: cached.value, source: 'cached', lastSyncedAt: new Date(cached.time) };
+    return { value: fallback, source: 'fallback', lastSyncedAt: null };
+  }
+}
+
+function isRepoList(value: unknown): value is GitHubRepo[] {
+  return Array.isArray(value) && value.every((repo) =>
+    repo && typeof repo.id === 'number' && typeof repo.name === 'string' &&
+    typeof repo.html_url === 'string' && typeof repo.updated_at === 'string');
+}
+
+function isProfile(value: unknown): value is GitHubUserProfile {
+  return !!value && typeof value === 'object' &&
+    typeof (value as GitHubUserProfile).login === 'string' &&
+    typeof (value as GitHubUserProfile).html_url === 'string';
+}
+
+function parseRepos(value: unknown): GitHubRepo[] {
+  if (!Array.isArray(value)) throw new Error('Invalid GitHub repository response');
+  const repos = value.map((entry: unknown) => {
+    if (!entry || typeof entry !== 'object') throw new Error('Invalid repository entry');
+    const r = entry as Record<string, unknown>;
+    if (typeof r.id !== 'number' || typeof r.name !== 'string' ||
+        typeof r.html_url !== 'string' || typeof r.updated_at !== 'string') {
+      throw new Error('Invalid GitHub repository metadata');
+    }
+    return {
+      id: r.id,
+      name: r.name,
+      full_name: typeof r.full_name === 'string' ? r.full_name : GITHUB_USERNAME + '/' + r.name,
+      description: typeof r.description === 'string' ? r.description : null,
+      html_url: r.html_url,
+      homepage: typeof r.homepage === 'string' ? r.homepage : null,
+      language: typeof r.language === 'string' ? r.language : null,
+      stargazers_count: typeof r.stargazers_count === 'number' ? r.stargazers_count : 0,
+      forks_count: typeof r.forks_count === 'number' ? r.forks_count : 0,
+      updated_at: r.updated_at,
+      pushed_at: typeof r.pushed_at === 'string' ? r.pushed_at : r.updated_at,
+      topics: Array.isArray(r.topics) ? r.topics.filter((topic): topic is string => typeof topic === 'string') : [],
+      fork: r.fork === true,
+    };
+  });
+  return repos;
+}
+
+function parseProfile(value: unknown): GitHubUserProfile {
+  if (!value || typeof value !== 'object') throw new Error('Invalid GitHub profile response');
+  const p = value as Record<string, unknown>;
+  if (typeof p.login !== 'string' || typeof p.html_url !== 'string') {
+    throw new Error('Invalid GitHub profile metadata');
+  }
+  return {
+    login: p.login,
+    name: typeof p.name === 'string' ? p.name : GITHUB_USERNAME,
+    avatar_url: typeof p.avatar_url === 'string' ? p.avatar_url : GITHUB_FALLBACK_PROFILE.avatar_url,
+    html_url: p.html_url,
+    public_repos: typeof p.public_repos === 'number' ? p.public_repos : 0,
+    followers: typeof p.followers === 'number' ? p.followers : 0,
+    following: typeof p.following === 'number' ? p.following : 0,
+    bio: typeof p.bio === 'string' ? p.bio : null,
+  };
+}
 
 // Static snapshot of rahmathidyatt's public repositories as immediate zero-lag baseline
 export const GITHUB_FALLBACK_REPOS: GitHubRepo[] = [
@@ -248,110 +377,42 @@ export const GITHUB_FALLBACK_PROFILE: GitHubUserProfile = {
 };
 
 /**
- * Fetch GitHub user profile and repositories with localStorage caching and offline fallback.
+ * Fetch repositories and profile independently. Cache is never advertised as live.
+ * A failed endpoint uses the last successful cache (even stale) before static fallback.
  */
 export async function fetchGitHubData(forceRefresh = false): Promise<{
   repos: GitHubRepo[];
   profile: GitHubUserProfile;
-  lastSyncedAt: Date;
+  reposSource: GitHubDataSource;
+  profileSource: GitHubDataSource;
+  reposLastSyncedAt: Date | null;
+  profileLastSyncedAt: Date | null;
+  lastSyncedAt: Date | null;
   isLive: boolean;
 }> {
-  // Check localStorage cache if not forcing refresh
-  if (!forceRefresh && typeof window !== 'undefined') {
-    try {
-      const cachedTime = localStorage.getItem(CACHE_KEY_TIMESTAMP);
-      const cachedRepos = localStorage.getItem(CACHE_KEY_REPOS);
-      const cachedProfile = localStorage.getItem(CACHE_KEY_PROFILE);
+  const [repos, profile] = await Promise.all([
+    loadResource(
+      'https://api.github.com/users/' + GITHUB_USERNAME + '/repos?sort=updated&per_page=100',
+      CACHE_KEY_REPOS, CACHE_KEY_REPOS_TIME, parseRepos, isRepoList,
+      GITHUB_FALLBACK_REPOS, forceRefresh,
+    ),
+    loadResource(
+      'https://api.github.com/users/' + GITHUB_USERNAME,
+      CACHE_KEY_PROFILE, CACHE_KEY_PROFILE_TIME, parseProfile, isProfile,
+      GITHUB_FALLBACK_PROFILE, forceRefresh,
+    ),
+  ]);
 
-      if (cachedTime && cachedRepos && cachedProfile) {
-        const timeDiff = Date.now() - parseInt(cachedTime, 10);
-        if (timeDiff < CACHE_DURATION_MS) {
-          return {
-            repos: JSON.parse(cachedRepos),
-            profile: JSON.parse(cachedProfile),
-            lastSyncedAt: new Date(parseInt(cachedTime, 10)),
-            isLive: true,
-          };
-        }
-      }
-    } catch {
-      // Ignore cache parse errors
-    }
-  }
-
-  try {
-    const headers = { Accept: 'application/vnd.github.v3+json' };
-
-    // Fetch user profile and repos in parallel
-    const [profileRes, reposRes] = await Promise.all([
-      fetch(`https://api.github.com/users/${GITHUB_USERNAME}`, { headers }),
-      fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=100`, { headers }),
-    ]);
-
-    let profile: GitHubUserProfile = GITHUB_FALLBACK_PROFILE;
-    if (profileRes.ok) {
-      const p = await profileRes.json();
-      profile = {
-        login: p.login || GITHUB_USERNAME,
-        name: p.name || 'Rahmat Hidayat',
-        avatar_url: p.avatar_url || GITHUB_FALLBACK_PROFILE.avatar_url,
-        html_url: p.html_url || `https://github.com/${GITHUB_USERNAME}`,
-        public_repos: typeof p.public_repos === 'number' ? p.public_repos : GITHUB_FALLBACK_PROFILE.public_repos,
-        followers: p.followers || 0,
-        following: p.following || 0,
-        bio: p.bio || GITHUB_FALLBACK_PROFILE.bio,
-      };
-    }
-
-    let repos: GitHubRepo[] = GITHUB_FALLBACK_REPOS;
-    if (reposRes.ok) {
-      const rList = await reposRes.json();
-      if (Array.isArray(rList) && rList.length > 0) {
-        // Filter out fork repositories if needed, or keep all user repositories
-        repos = rList.map((r: any) => ({
-          id: r.id,
-          name: r.name,
-          full_name: r.full_name,
-          description: r.description,
-          html_url: r.html_url,
-          homepage: r.homepage,
-          language: r.language,
-          stargazers_count: r.stargazers_count || 0,
-          forks_count: r.forks_count || 0,
-          updated_at: r.updated_at || r.pushed_at,
-          pushed_at: r.pushed_at,
-          topics: Array.isArray(r.topics) ? r.topics : [],
-          fork: !!r.fork,
-        }));
-      }
-    }
-
-    const now = Date.now();
-    if (typeof window !== 'undefined') {
-      try {
-        localStorage.setItem(CACHE_KEY_REPOS, JSON.stringify(repos));
-        localStorage.setItem(CACHE_KEY_PROFILE, JSON.stringify(profile));
-        localStorage.setItem(CACHE_KEY_TIMESTAMP, now.toString());
-      } catch {
-        // Ignore quota errors
-      }
-    }
-
-    return {
-      repos,
-      profile,
-      lastSyncedAt: new Date(now),
-      isLive: true,
-    };
-  } catch (err) {
-    console.warn('GitHub live fetch failed, using fallback repository data:', err);
-    return {
-      repos: GITHUB_FALLBACK_REPOS,
-      profile: GITHUB_FALLBACK_PROFILE,
-      lastSyncedAt: new Date(),
-      isLive: false,
-    };
-  }
+  return {
+    repos: repos.value,
+    profile: profile.value,
+    reposSource: repos.source,
+    profileSource: profile.source,
+    reposLastSyncedAt: repos.lastSyncedAt,
+    profileLastSyncedAt: profile.lastSyncedAt,
+    lastSyncedAt: repos.lastSyncedAt,
+    isLive: repos.source === 'live' && profile.source === 'live',
+  };
 }
 
 /**
@@ -419,86 +480,6 @@ export function formatRelativeTime(dateString: string, lang: 'en' | 'id'): strin
   }
 }
 
-// Known real contribution days for rahmathidyatt
-const KNOWN_ACTIVE_DAYS: [string, number, 0 | 1 | 2 | 3 | 4][] = [
-  ['2025-12-02', 19, 4],
-  ['2025-12-28', 4, 3],
-  ['2025-12-29', 3, 2],
-  ['2025-12-30', 2, 2],
-  ['2026-01-17', 2, 2],
-  ['2026-01-18', 3, 2],
-  ['2026-01-28', 3, 2],
-  ['2026-01-29', 2, 2],
-  ['2026-01-30', 2, 2],
-  ['2026-02-04', 3, 2],
-  ['2026-02-05', 2, 2],
-  ['2026-02-06', 3, 2],
-  ['2026-05-28', 1, 1],
-  ['2026-05-29', 4, 3],
-  ['2026-05-31', 16, 4],
-  ['2026-06-01', 2, 2],
-  ['2026-06-02', 1, 1],
-  ['2026-06-06', 3, 2],
-  ['2026-08-25', 1, 1],
-  ['2026-08-26', 1, 1],
-  ['2026-09-18', 2, 2],
-  ['2026-09-19', 1, 1],
-  ['2026-09-20', 6, 4],
-  ['2026-09-21', 2, 2],
-  ['2026-09-22', 2, 2],
-  ['2026-09-24', 2, 2],
-  ['2026-09-27', 1, 1],
-  ['2026-09-29', 2, 2],
-  ['2026-09-30', 2, 2],
-  ['2026-10-01', 1, 1],
-  ['2026-10-04', 1, 1],
-  ['2026-10-05', 2, 2],
-  ['2026-10-06', 6, 4],
-  ['2026-10-13', 2, 2],
-  ['2026-10-18', 3, 2],
-  ['2026-10-19', 2, 2],
-  ['2026-10-29', 7, 4],
-];
-
-/**
- * Generate a complete 365-day fallback calendar leading up to today
- */
-export function generateFallbackContributions(): GitHubContributionDay[] {
-  const activeMap = new Map<string, { count: number; level: 0 | 1 | 2 | 3 | 4 }>();
-  KNOWN_ACTIVE_DAYS.forEach(([date, count, level]) => {
-    activeMap.set(date, { count, level });
-  });
-
-  const days: GitHubContributionDay[] = [];
-  const today = new Date();
-  // Set to local midnight
-  today.setHours(0, 0, 0, 0);
-
-  // 365 days back
-  for (let i = 364; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0];
-
-    const active = activeMap.get(dateStr);
-    if (active) {
-      days.push({
-        date: dateStr,
-        count: active.count,
-        level: active.level,
-      });
-    } else {
-      days.push({
-        date: dateStr,
-        count: 0,
-        level: 0,
-      });
-    }
-  }
-
-  return days;
-}
-
 /**
  * Calculates metrics from a list of contribution days
  */
@@ -551,88 +532,62 @@ export function calculateContributionStats(contributions: GitHubContributionDay[
 }
 
 /**
- * Fetch GitHub user contribution history
+ * Fetch contributions through the public third-party contributions endpoint.
+ * Unknown days must never be synthesized as zero-activity days.
  */
 export async function fetchGitHubContributions(forceRefresh = false): Promise<GitHubContributionData> {
-  // Check localStorage cache
-  if (!forceRefresh && typeof window !== 'undefined') {
-    try {
-      const cached = localStorage.getItem(CACHE_KEY_CONTRIBUTIONS);
-      const cachedTime = localStorage.getItem(CACHE_KEY_TIMESTAMP);
-      if (cached && cachedTime) {
-        const timeDiff = Date.now() - parseInt(cachedTime, 10);
-        if (timeDiff < CACHE_DURATION_MS) {
-          const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed.contributions) && parsed.contributions.length > 0) {
-            return {
-              ...parsed,
-              lastSyncedAt: new Date(parseInt(cachedTime, 10)),
-            };
-          }
-        }
-      }
-    } catch {
-      // Ignore cache parse errors
-    }
+  const isValid = (raw: unknown): raw is GitHubContributionData => {
+    if (!raw || typeof raw !== 'object') return false;
+    const data = raw as GitHubContributionData;
+    return Array.isArray(data.contributions) && data.contributions.every((day) =>
+      typeof day.date === 'string' && Number.isFinite(day.count) &&
+      day.count >= 0 && Number.isInteger(day.level) && day.level >= 0 && day.level <= 4);
+  };
+  const cached = readCache(CACHE_KEY_CONTRIBUTIONS, CACHE_KEY_CONTRIBUTIONS_TIME, isValid);
+  const asCached = (value: GitHubContributionData, time: number): GitHubContributionData => ({
+    ...value, source: 'cached', lastSyncedAt: new Date(time),
+  });
+  if (!forceRefresh && cached && Date.now() - cached.time < CACHE_DURATION_MS) {
+    return asCached(cached.value, cached.time);
   }
 
   try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4000);
-
-    const res = await fetch(`https://github-contributions-api.jogruber.de/v4/${GITHUB_USERNAME}?y=last`, {
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
-
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data.contributions) && data.contributions.length > 0) {
-        const validDays: GitHubContributionDay[] = data.contributions.map((c: any) => ({
-          date: c.date,
-          count: typeof c.count === 'number' ? c.count : 0,
-          level: Math.min(Math.max(c.level || 0, 0), 4) as 0 | 1 | 2 | 3 | 4,
-        }));
-
-        const stats = calculateContributionStats(validDays);
-        const result: GitHubContributionData = {
-          totalContributions: stats.totalContributions,
-          currentStreak: stats.currentStreak,
-          longestStreak: stats.longestStreak,
-          peakDay: stats.peakDay,
-          contributions: validDays,
-          lastSyncedAt: new Date(),
-        };
-
-        if (typeof window !== 'undefined') {
-          try {
-            localStorage.setItem(CACHE_KEY_CONTRIBUTIONS, JSON.stringify(result));
-          } catch {
-            // Ignore quota errors
-          }
-        }
-
-        return result;
-      }
+    const json = await requestJson('https://github-contributions-api.jogruber.de/v4/' + GITHUB_USERNAME + '?y=last', 8000);
+    if (!json || typeof json !== 'object' || !Array.isArray((json as { contributions?: unknown }).contributions)) {
+      throw new Error('Invalid contributions response');
     }
-  } catch (err) {
-    console.warn('Live contributions fetch failed, loading authentic fallback activity:', err);
+    const raw = (json as { contributions: unknown[] }).contributions;
+    if (raw.length === 0) throw new Error('Empty contributions response');
+    const days: GitHubContributionDay[] = raw.map((entry) => {
+      if (!entry || typeof entry !== 'object') throw new Error('Invalid contribution entry');
+      const item = entry as Record<string, unknown>;
+      if (typeof item.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(item.date) ||
+          typeof item.count !== 'number' || !Number.isInteger(item.count) || item.count < 0 ||
+          typeof item.level !== 'number' || !Number.isInteger(item.level) || item.level < 0 || item.level > 4) {
+        throw new Error('Invalid contribution day');
+      }
+      return { date: item.date, count: item.count, level: item.level as 0 | 1 | 2 | 3 | 4 };
+    });
+    const stats = calculateContributionStats(days);
+    const time = Date.now();
+    const result: GitHubContributionData = {
+      ...stats, contributions: days, source: 'live', lastSyncedAt: new Date(time),
+    };
+    writeCache(CACHE_KEY_CONTRIBUTIONS, CACHE_KEY_CONTRIBUTIONS_TIME, result, time);
+    return result;
+  } catch (error) {
+    console.warn('GitHub contributions unavailable:', error);
+    if (cached) return asCached(cached.value, cached.time);
+    return {
+      totalContributions: 0,
+      currentStreak: 0,
+      longestStreak: 0,
+      peakDay: { date: '', count: 0 },
+      contributions: [],
+      source: 'unavailable',
+      lastSyncedAt: null,
+    };
   }
-
-  // Graceful fallback with authentic data
-  const fallbackDays = generateFallbackContributions();
-  const fallbackStats = calculateContributionStats(fallbackDays);
-
-  const fallbackData: GitHubContributionData = {
-    totalContributions: fallbackStats.totalContributions,
-    currentStreak: fallbackStats.currentStreak,
-    longestStreak: fallbackStats.longestStreak,
-    peakDay: fallbackStats.peakDay,
-    contributions: fallbackDays,
-    lastSyncedAt: new Date(),
-  };
-
-  return fallbackData;
 }
 
 /**
