@@ -9,8 +9,11 @@
     "preview": "vite preview --port 3000",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
-    "test": "node --import tsx --test src/utils/*.test.ts",
-    "check": "npm run typecheck && npm test && npm run build"
+    "typecheck:tests": "tsc --noEmit --project tsconfig.tests.json",
+    "test": "node --import tsx --test \"src/**/*.test.{ts,tsx}\"",
+    "audit:prod": "npm audit --omit=dev --audit-level=high",
+    "audit:all": "npm audit --audit-level=high",
+    "check": "npm run typecheck && npm run typecheck:tests && npm test && npm run build"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -19,6 +22,7 @@
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
+    "@types/node": "^22.16.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^4.3.4",

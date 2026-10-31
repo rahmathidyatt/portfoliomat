@@ -1,0 +1,36 @@
+name: Refresh lockfile on Stage 1 branch (temporary)
+
+on:
+  push:
+    branches:
+      - chore/portfoliomat-stage1-ci-foundation
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v7
+        with:
+          ref: chore/portfoliomat-stage1-ci-foundation
+      - name: Set up Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Reconcile package-lock.json with package.json
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Commit only lockfile to approved branch
+        run: |
+          test -f package-lock.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          if ! git diff --cached --quiet; then
+            git commit -m "build: synchronize Node type definitions in npm lockfile"
+            git push origin HEAD:chore/portfoliomat-stage1-ci-foundation
+          fi
