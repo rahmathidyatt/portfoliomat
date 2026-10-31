@@ -31,8 +31,8 @@ A modern, responsive personal portfolio website built with React, TypeScript, an
 ## Running Locally
 
 ```bash
-# Install dependencies
-npm install
+# Install reproducible dependencies
+npm ci
 
 # Start development server
 npm run dev
@@ -40,3 +40,24 @@ npm run dev
 # Build for production
 npm run build
 ```
+
+## Quality Checks
+
+Run the same quality checks locally as the GitHub Actions workflow:
+
+```bash
+npm ci
+npm run typecheck
+npm run typecheck:tests
+npm test
+npm run build
+npm run audit:all
+```
+
+- Use Node.js 22 for consistent CI and local results.
+- Tests use Node.js's built-in test runner and `tsx` to load `.test.ts` and `.test.tsx` files recursively from `src/`. The dedicated `tsconfig.tests.json` also typechecks test files.
+- CI runs on pushes to all branches and on pull requests targeting `main`. Concurrent runs for the same branch are superseded to limit redundant checks.
+- The separate dependency-audit job checks all dependencies and fails if npm reports a **high** or **critical** advisory. Audit results depend on npm registry availability and the advisory database; it does not modify packages.
+- An audit result is not a guarantee that the project has no vulnerabilities.
+- The CI workflow performs **no deployment** and uses read-only repository permissions.
+- Add environment values from `.env.example` as needed for local contact form testing; no credentials are required for the static build.

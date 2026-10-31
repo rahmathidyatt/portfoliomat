@@ -24,18 +24,9 @@ test('YouTube background music configuration matches requested track', () => {
 });
 
 test('extractYouTubeVideoId parses standard and short URLs', () => {
-  assert.equal(
-    extractYouTubeVideoId('https://youtu.be/PCS9DI7fsUY?si=kNZSdKJiO-XBTgmR'),
-    'PCS9DI7fsUY'
-  );
-  assert.equal(
-    extractYouTubeVideoId('https://www.youtube.com/watch?v=PCS9DI7fsUY'),
-    'PCS9DI7fsUY'
-  );
-  assert.equal(
-    extractYouTubeVideoId('https://www.youtube.com/embed/PCS9DI7fsUY'),
-    'PCS9DI7fsUY'
-  );
+  assert.equal(extractYouTubeVideoId('https://youtu.be/PCS9DI7fsUY?si=kNZSdKJiO-XBTgmR'), 'PCS9DI7fsUY');
+  assert.equal(extractYouTubeVideoId('https://www.youtube.com/watch?v=PCS9DI7fsUY'), 'PCS9DI7fsUY');
+  assert.equal(extractYouTubeVideoId('https://www.youtube.com/embed/PCS9DI7fsUY'), 'PCS9DI7fsUY');
 });
 
 test('buildYouTubeEmbedUrl generates valid looping embed URL', () => {
@@ -55,11 +46,25 @@ test('generateSempurnaScore returns non-empty note sequence', () => {
   assert.ok(score.length > 50);
 });
 
-test('GitHub contribution stats and peak day date formatting work accurately', () => {
-  const days = generateFallbackContributions();
+test('GitHub contribution statistics use deterministic sample data', () => {
+  const days = [
+    { date: '2026-10-01', count: 0, level: 0 as const },
+    { date: '2026-10-02', count: 2, level: 2 as const },
+    { date: '2026-10-03', count: 4, level: 3 as const },
+    { date: '2026-10-04', count: 0, level: 0 as const },
+    { date: '2026-10-05', count: 3, level: 2 as const },
+  ];
+
   const stats = calculateContributionStats(days);
-  assert.ok(stats.totalContributions > 0);
-  assert.equal(stats.peakDay.date, '2025-12-02');
-  assert.equal(stats.peakDay.count, 19);
+  assert.equal(stats.totalContributions, 9);
+  assert.equal(stats.currentStreak, 1);
+  assert.equal(stats.longestStreak, 2);
+  assert.deepEqual(stats.peakDay, { date: '2026-10-03', count: 4 });
   assert.equal(formatContributionDate('2025-12-02', 'en'), 'Tuesday, Dec 2, 2025');
+});
+
+test('fallback contributions are generated for a rolling 365-day period', () => {
+  const days = generateFallbackContributions();
+  assert.equal(days.length, 365);
+  assert.ok(days.every((day) => /^\d{4}-\d{2}-\d{2}$/.test(day.date)));
 });

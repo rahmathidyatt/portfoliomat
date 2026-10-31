@@ -1,0 +1,28 @@
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+.vite/
+*.tsbuildinfo
+
+# Local environment settings
+.env
+.env.*
+!.env.example
+
+# Logs and operating system files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.DS_Store
+Thumbs.db
+
+# Local editor state
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Temporary AI Studio artifacts (existing tracked files remain until cleanup)
+.aistudio/**/.tempmediaStorage/
