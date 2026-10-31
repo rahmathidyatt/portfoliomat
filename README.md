@@ -31,8 +31,8 @@ A modern, responsive personal portfolio website built with React, TypeScript, an
 ## Running Locally
 
 ```bash
-# Install dependencies
-npm install
+# Install reproducible dependencies
+npm ci
 
 # Start development server
 npm run dev
@@ -40,3 +40,19 @@ npm run dev
 # Build for production
 npm run build
 ```
+
+## Quality Checks
+
+Run the same checks locally that GitHub Actions runs on feature-branch pushes and pull requests:
+
+```bash
+npm ci
+npm run typecheck
+npm test
+npm run build
+```
+
+- Use Node.js 22 for consistent CI and local results.
+- Tests use Node.js's built-in test runner with `tsx` to load TypeScript.
+- The CI workflow performs **no deployment** and uses read-only repository permissions.
+- Add environment values from `.env.example` as needed for local contact form testing; no credentials are required for the static build.
