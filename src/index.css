@@ -755,37 +755,7 @@ button {
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 3rem;
-}
-
-/* Hero Stats Strip */
-.hero-stats-strip {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--card-border);
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-value {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--title-color);
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-}
-
-.stat-label {
-  font-size: var(--smaller-font-size);
-  color: var(--text-color-light);
-  font-weight: var(--font-medium);
-  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
 }
 
 /* Hero Visual & Profile Frame */
@@ -1722,6 +1692,8 @@ button {
   box-shadow: var(--card-shadow);
   transition: border-color 0.25s ease, box-shadow 0.25s ease;
   position: relative;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .github-contribution-card:hover {
@@ -1741,6 +1713,8 @@ button {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  min-width: 0;
+  flex: 1 1 240px;
 }
 
 .github-contribution-badge {
@@ -1755,6 +1729,7 @@ button {
 .activity-pulse-icon {
   color: var(--first-color);
   animation: pulseGentle 2s infinite ease-in-out;
+  flex-shrink: 0;
 }
 
 @keyframes pulseGentle {
@@ -1782,6 +1757,7 @@ button {
   border-radius: 2rem;
   padding: 3px;
   gap: 3px;
+  max-width: 100%;
 }
 
 .github-timeframe-btn {
@@ -1794,6 +1770,7 @@ button {
   color: var(--text-color-light);
   cursor: pointer;
   transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
 .github-timeframe-btn:hover {
@@ -1809,9 +1786,10 @@ button {
 /* Stats summary grid */
 .github-contribution-stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
+  width: 100%;
 }
 
 .contribution-stat-card {
@@ -1822,6 +1800,9 @@ button {
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
   transition: transform 0.2s ease, border-color 0.2s ease;
 }
 
@@ -1864,39 +1845,43 @@ button {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  flex: 1;
 }
 
 .contribution-stat-number {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: var(--font-bold);
   color: var(--title-color);
   line-height: 1.2;
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: 0.3rem;
+  row-gap: 0.1rem;
+  word-break: break-word;
 }
 
 .contribution-stat-number .unit {
   font-size: var(--smaller-font-size);
   font-weight: var(--font-normal);
   color: var(--text-color-light);
-  margin-left: 0.2rem;
 }
 
 .contribution-stat-label {
   font-size: var(--smaller-font-size);
   font-weight: var(--font-semi-bold);
   color: var(--text-color);
-  margin-top: 0.15rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin-top: 0.2rem;
+  line-height: 1.3;
+  overflow-wrap: break-word;
 }
 
 .contribution-stat-sublabel {
   font-size: 0.725rem;
   color: var(--text-color-light);
-  margin-top: 0.1rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin-top: 0.15rem;
+  line-height: 1.35;
+  overflow-wrap: break-word;
 }
 
 /* Heatmap container & scroll */
@@ -2160,18 +2145,25 @@ body.dark-theme .heatmap-cell--level-4 {
 
 @media screen and (max-width: 992px) {
   .github-contribution-stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 640px) {
   .github-contribution-card {
     padding: 1.15rem;
+    border-radius: 1rem;
   }
 
   .github-contribution-header {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 0.85rem;
+  }
+
+  .github-contribution-title-wrap {
+    flex: none;
+    width: 100%;
   }
 
   .github-contribution-timeframe-tabs {
@@ -2182,26 +2174,63 @@ body.dark-theme .heatmap-cell--level-4 {
   .github-timeframe-btn {
     flex: 1;
     text-align: center;
-    padding: 0.35rem 0.5rem;
+    padding: 0.4rem 0.5rem;
   }
 
   .github-contribution-stats-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.65rem;
+    margin-bottom: 1.15rem;
   }
 
   .contribution-stat-card {
-    padding: 0.75rem;
-    gap: 0.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.85rem;
+    gap: 0.45rem;
   }
 
   .contribution-stat-icon {
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
+  }
+
+  .contribution-stat-content {
+    width: 100%;
   }
 
   .contribution-stat-number {
     font-size: 1.1rem;
+  }
+
+  .contribution-stat-label {
+    font-size: 0.78rem;
+  }
+
+  .contribution-stat-sublabel {
+    font-size: 0.7rem;
+  }
+
+  .github-heatmap-container {
+    padding: 0.9rem;
+  }
+
+  .github-heatmap-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.65rem;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  .github-contribution-stats-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .contribution-stat-card {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.75rem;
   }
 }
 
@@ -4103,6 +4132,76 @@ body.dark-theme .form-status-alert.color-red {
 .bg-music-player.is-expanded {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
   border-color: var(--first-color);
+}
+
+.bg-music-player.is-expanded {
+  border-radius: 1.1rem;
+  padding: 0.65rem 0.75rem;
+  max-width: 300px;
+}
+
+.bg-music-yt-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.bg-music-yt-drawer.open {
+  width: 100%;
+  margin-bottom: 0.55rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.bg-music-card-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.bg-music-card-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 0.55rem;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--card-border);
+}
+
+.bg-music-card-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 0.1rem;
+}
+
+.bg-music-card-title {
+  font-size: 0.76rem;
+  font-weight: var(--font-bold);
+  color: var(--title-color);
+  line-height: 1.25;
+}
+
+.bg-music-card-artist {
+  font-size: 0.68rem;
+  color: var(--text-color-light);
+}
+
+.bg-music-yt-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.68rem;
+  font-weight: var(--font-semi-bold);
+  color: var(--first-color);
+  margin-top: 0.15rem;
+}
+
+.bg-music-yt-link:hover {
+  text-decoration: underline;
 }
 
 .bg-music-inner {

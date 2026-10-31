@@ -1,7 +1,46 @@
-// Web Audio API Synthesizer & Arrangement for "Sempurna" (Andra and The Backbone)
-// Delicate acoustic fingerstyle guitar & piano arrangement in D Major
+// Background Music Configuration & Acoustic Instrumental Synth Fallback
+// Track: "Sempurna (Acoustic Instrumental)" by Killercats (https://youtu.be/PCS9DI7fsUY?si=kNZSdKJiO-XBTgmR)
 
-interface NoteEvent {
+export const YOUTUBE_TRACK_URL = 'https://youtu.be/PCS9DI7fsUY?si=kNZSdKJiO-XBTgmR';
+export const YOUTUBE_VIDEO_ID = 'PCS9DI7fsUY';
+
+export const BACKGROUND_TRACK_META = {
+  videoId: YOUTUBE_VIDEO_ID,
+  url: YOUTUBE_TRACK_URL,
+  thumbnailUrl: `https://i.ytimg.com/vi/${YOUTUBE_VIDEO_ID}/hqdefault.jpg`,
+  title: 'Sempurna (Acoustic Instrumental)',
+  shortTitle: 'Sempurna',
+  artist: 'Killercats',
+  subtitleEn: 'Acoustic Instrumental',
+  subtitleId: 'Instrumental Akustik',
+};
+
+export function extractYouTubeVideoId(url: string): string | null {
+  const trimmed = url.trim();
+  const shortMatch = trimmed.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+  if (shortMatch) return shortMatch[1];
+  const watchMatch = trimmed.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+  if (watchMatch) return watchMatch[1];
+  const embedMatch = trimmed.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/);
+  if (embedMatch) return embedMatch[1];
+  return null;
+}
+
+export function buildYouTubeEmbedUrl(videoId: string, autoplay = true, muted = false): string {
+  const params = new URLSearchParams({
+    autoplay: autoplay ? '1' : '0',
+    mute: muted ? '1' : '0',
+    loop: '1',
+    playlist: videoId,
+    controls: '1',
+    playsinline: '1',
+    enablejsapi: '1',
+    rel: '0',
+  });
+  return `https://www.youtube.com/embed/${videoId}?${params.toString()}`;
+}
+
+export interface NoteEvent {
   note: string; // e.g. "D4", "F#4"
   time: number; // in beats (0, 0.5, 1.0, ...)
   duration: number; // in beats
@@ -410,37 +449,51 @@ export class SempurnaAudioPlayer {
     this.initContext();
     if (!this.ctx) return;
 
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
-    }
-
     this.stopScheduledNotes();
     this.isPlaying = true;
     this.notifyState();
 
-    const score = generateSempurnaScore();
-    const startTime = this.ctx.currentTime + 0.1;
+    const startScheduling = () => {
+      if (!this.ctx || !this.isPlaying || this.ctx.state !== 'running') return;
+      this.stopScheduledNotes();
 
-    let maxTime = 0;
-    score.forEach((ev) => {
-      const freq = NOTE_FREQS[ev.note];
-      if (freq) {
-        const noteStart = startTime + ev.time * BEAT_DURATION;
-        const noteDur = ev.duration * BEAT_DURATION;
-        const noteEnd = ev.time * BEAT_DURATION + noteDur;
-        if (noteEnd > maxTime) maxTime = noteEnd;
+      const score = generateSempurnaScore();
+      const startTime = this.ctx.currentTime + 0.1;
 
-        this.playNote(freq, noteStart, noteDur, ev.velocity || 0.5, ev.channel || 'arpeggio');
-      }
-    });
+      let maxTime = 0;
+      score.forEach((ev) => {
+        const freq = NOTE_FREQS[ev.note];
+        if (freq) {
+          const noteStart = startTime + ev.time * BEAT_DURATION;
+          const noteDur = ev.duration * BEAT_DURATION;
+          const noteEnd = ev.time * BEAT_DURATION + noteDur;
+          if (noteEnd > maxTime) maxTime = noteEnd;
 
-    // Schedule next loop
-    const loopDurationMs = (maxTime + 2.0) * 1000;
-    this.loopTimer = window.setTimeout(() => {
-      if (this.isPlaying) {
-        this.play();
-      }
-    }, loopDurationMs);
+          this.playNote(freq, noteStart, noteDur, ev.velocity || 0.5, ev.channel || 'arpeggio');
+        }
+      });
+
+      // Schedule next loop
+      const loopDurationMs = (maxTime + 2.0) * 1000;
+      this.loopTimer = window.setTimeout(() => {
+        if (this.isPlaying) {
+          this.play();
+        }
+      }, loopDurationMs);
+    };
+
+    if (this.ctx.state === 'suspended') {
+      this.ctx
+        .resume()
+        .then(() => {
+          startScheduling();
+        })
+        .catch(() => {
+          // Will resume on first user interaction
+        });
+    } else {
+      startScheduling();
+    }
   }
 
   public pause() {

@@ -26,12 +26,6 @@ export const translations = {
       ctaSecondary: 'Contact Me',
       ctaCV: 'Download CV',
       scrollCaption: 'Scroll to explore journey',
-      stats: [
-        { label: 'Years of Experience', value: '4+' },
-        { label: 'Certifications Earned', value: '8+' },
-        { label: 'Public Repositories', value: '4+' },
-        { label: 'Dedication & Focus', value: '100%' },
-      ],
     },
     about: {
       title: 'About Me',
@@ -314,12 +308,6 @@ export const translations = {
       ctaSecondary: 'Hubungi Saya',
       ctaCV: 'Unduh CV',
       scrollCaption: 'Gulir untuk melihat perjalanan',
-      stats: [
-        { label: 'Tahun Pengalaman', value: '4+' },
-        { label: 'Sertifikasi Terverifikasi', value: '8+' },
-        { label: 'Repositori Publik', value: '4+' },
-        { label: 'Dedikasi & Fokus', value: '100%' },
-      ],
     },
     about: {
       title: 'Tentang Saya',

@@ -99,16 +99,6 @@ export const Hero: React.FC = () => {
                 <ArrowRight size={16} className="button__icon" />
               </button>
             </div>
-
-            {/* Quick Stats Strip */}
-            <div className="hero-stats-strip">
-              {t.hero.stats.map((stat, idx) => (
-                <div key={idx} className="stat-item">
-                  <span className="stat-value">{stat.value}</span>
-                  <span className="stat-label">{stat.label}</span>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* Hero Visual Avatar Card */}
