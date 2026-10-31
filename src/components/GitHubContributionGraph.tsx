@@ -206,7 +206,7 @@ export const GitHubContributionGraph: React.FC<GitHubContributionGraphProps> = (
             <Zap size={16} />
           </div>
           <div className="contribution-stat-content">
-            <div className="contribution-stat-number">{activeStats.total}</div>
+            <div className="contribution-stat-number">{data?.source === 'unavailable' || !data ? '—' : activeStats.total}</div>
             <div className="contribution-stat-label">
               {t.projects.contributionsTotal}
             </div>
@@ -226,7 +226,7 @@ export const GitHubContributionGraph: React.FC<GitHubContributionGraphProps> = (
           </div>
           <div className="contribution-stat-content">
             <div className="contribution-stat-number">
-              {activeStats.currentStreak}{' '}
+              {data?.source === 'unavailable' || !data ? '—' : activeStats.currentStreak}{' '}
               <span className="unit">
                 {activeStats.currentStreak === 1
                   ? t.projects.contributionsDay
@@ -248,7 +248,7 @@ export const GitHubContributionGraph: React.FC<GitHubContributionGraphProps> = (
           </div>
           <div className="contribution-stat-content">
             <div className="contribution-stat-number">
-              {activeStats.longestStreak}{' '}
+              {data?.source === 'unavailable' || !data ? '—' : activeStats.longestStreak}{' '}
               <span className="unit">
                 {activeStats.longestStreak === 1
                   ? t.projects.contributionsDay
@@ -270,7 +270,7 @@ export const GitHubContributionGraph: React.FC<GitHubContributionGraphProps> = (
           </div>
           <div className="contribution-stat-content">
             <div className="contribution-stat-number">
-              {activeStats.peakDay.count > 0 ? activeStats.peakDay.count : 0}{' '}
+              {data?.source === 'unavailable' || !data ? '—' : activeStats.peakDay.count}{' '}
               <span className="unit">
                 {activeStats.peakDay.count === 1
                   ? t.projects.contributionsCommit
@@ -294,6 +294,10 @@ export const GitHubContributionGraph: React.FC<GitHubContributionGraphProps> = (
         {isLoading ? (
           <div className="github-heatmap-loading">
             <div className="heatmap-skeleton-bar" />
+          </div>
+        ) : !data || data.source === 'unavailable' ? (
+          <div className="github-heatmap-loading" role="status">
+            {language === 'id' ? 'Riwayat kontribusi belum tersedia. Coba sinkronisasi ulang nanti.' : 'Contribution history is unavailable. Try syncing again later.'}
           </div>
         ) : (
           <div className="github-heatmap-scroll">
@@ -375,9 +379,11 @@ export const GitHubContributionGraph: React.FC<GitHubContributionGraphProps> = (
           <div className="github-heatmap-live-indicator">
             <span className="pulse-dot" />
             <span>
-              {language === 'id'
-                ? 'Sinkronisasi riwayat komit @rahmathidyatt'
-                : 'Synced commit patterns for @rahmathidyatt'}
+              {data?.source === 'live'
+                ? (language === 'id' ? 'Data terbaru dari layanan kontribusi pihak ketiga' : 'Latest data from third-party contribution service')
+                : data?.source === 'cached'
+                  ? (language === 'id' ? 'Riwayat tersimpan (cache), bukan data live' : 'Cached history, not live data')
+                  : (language === 'id' ? 'Riwayat tidak tersedia' : 'History unavailable')}
             </span>
           </div>
 
