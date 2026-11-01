@@ -8,6 +8,8 @@ const CACHE_KEY_REPOS_TIME = 'rahmathidyatt_github_repos_time_v3';
 const CACHE_KEY_PROFILE_TIME = 'rahmathidyatt_github_profile_time_v3';
 const CACHE_KEY_CONTRIBUTIONS_TIME = 'rahmathidyatt_github_contributions_time_v3';
 const CACHE_DURATION_MS = 15 * 60 * 1000;
+const MAX_STALE_CONTRIBUTIONS_MS = 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 type ResourceResult<T> = {
   value: T;
@@ -505,21 +507,22 @@ export function calculateContributionStats(contributions: GitHubContributionDay[
     }
   });
 
-  // Calculate current streak counting backwards from the latest day
+  // A streak is only current when the final observed date is today or yesterday.
+  // An old response must never claim that a historical streak is still active.
   let currentStreak = 0;
-  const n = contributions.length;
-  let startIndex = n - 1;
-
-  // If latest day has 0 commits, check if yesterday had commits (streak still active for today)
-  if (startIndex >= 0 && contributions[startIndex].count === 0 && startIndex - 1 >= 0 && contributions[startIndex - 1].count > 0) {
-    startIndex = startIndex - 1;
-  }
-
-  for (let i = startIndex; i >= 0; i--) {
-    if (contributions[i].count > 0) {
-      currentStreak += 1;
-    } else {
-      break;
+  const today = new Date().toISOString().slice(0, 10);
+  const yesterday = new Date(Date.now() - DAY_MS).toISOString().slice(0, 10);
+  const latestDate = contributions[contributions.length - 1]?.date;
+  if (latestDate === today || latestDate === yesterday) {
+    let startIndex = contributions.length - 1;
+    if (latestDate === today && contributions[startIndex]?.count === 0 &&
+        contributions[startIndex - 1]?.date === yesterday &&
+        contributions[startIndex - 1]?.count > 0) {
+      startIndex -= 1;
+    }
+    for (let i = startIndex; i >= 0; i--) {
+      if (contributions[i].count > 0) currentStreak += 1;
+      else break;
     }
   }
 
@@ -532,6 +535,31 @@ export function calculateContributionStats(contributions: GitHubContributionDay[
 }
 
 /**
+ * Reject malformed, unordered, incomplete or out-of-date third-party timelines.
+ * Unknown dates must not be interpreted as zero-activity days.
+ */
+export function isValidContributionTimeline(days: unknown, now = Date.now()): days is GitHubContributionDay[] {
+  if (!Array.isArray(days) || days.length === 0 || days.length > 370) return false;
+  let previous = -1;
+  for (const day of days) {
+    if (!day || typeof day !== 'object') return false;
+    const item = day as Record<string, unknown>;
+    if (typeof item.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(item.date) ||
+        typeof item.count !== 'number' || !Number.isInteger(item.count) || item.count < 0 ||
+        typeof item.level !== 'number' || !Number.isInteger(item.level) || item.level < 0 || item.level > 4) {
+      return false;
+    }
+    const ms = Date.parse(item.date + 'T00:00:00.000Z');
+    if (!Number.isFinite(ms) || new Date(ms).toISOString().slice(0, 10) !== item.date) return false;
+    if (previous >= 0 && ms - previous !== DAY_MS) return false;
+    previous = ms;
+  }
+  const todayStart = Math.floor(now / DAY_MS) * DAY_MS;
+  // Allow yesterday/today plus a day of timezone skew from the provider.
+  return previous >= todayStart - DAY_MS * 2 && previous <= todayStart + DAY_MS;
+}
+
+/**
  * Fetch contributions through the public third-party contributions endpoint.
  * Unknown days must never be synthesized as zero-activity days.
  */
@@ -539,16 +567,16 @@ export async function fetchGitHubContributions(forceRefresh = false): Promise<Gi
   const isValid = (raw: unknown): raw is GitHubContributionData => {
     if (!raw || typeof raw !== 'object') return false;
     const data = raw as GitHubContributionData;
-    return Array.isArray(data.contributions) && data.contributions.every((day) =>
-      typeof day.date === 'string' && Number.isFinite(day.count) &&
-      day.count >= 0 && Number.isInteger(day.level) && day.level >= 0 && day.level <= 4);
+    return isValidContributionTimeline(data.contributions);
   };
   const cached = readCache(CACHE_KEY_CONTRIBUTIONS, CACHE_KEY_CONTRIBUTIONS_TIME, isValid);
+  const reusableCache = cached && Date.now() - cached.time <= MAX_STALE_CONTRIBUTIONS_MS ? cached : null;
   const asCached = (value: GitHubContributionData, time: number): GitHubContributionData => ({
-    ...value, source: 'cached', lastSyncedAt: new Date(time),
+    ...value, ...calculateContributionStats(value.contributions),
+    source: 'cached', lastSyncedAt: new Date(time),
   });
-  if (!forceRefresh && cached && Date.now() - cached.time < CACHE_DURATION_MS) {
-    return asCached(cached.value, cached.time);
+  if (!forceRefresh && reusableCache && Date.now() - reusableCache.time < CACHE_DURATION_MS) {
+    return asCached(reusableCache.value, reusableCache.time);
   }
 
   try {
@@ -557,17 +585,8 @@ export async function fetchGitHubContributions(forceRefresh = false): Promise<Gi
       throw new Error('Invalid contributions response');
     }
     const raw = (json as { contributions: unknown[] }).contributions;
-    if (raw.length === 0) throw new Error('Empty contributions response');
-    const days: GitHubContributionDay[] = raw.map((entry) => {
-      if (!entry || typeof entry !== 'object') throw new Error('Invalid contribution entry');
-      const item = entry as Record<string, unknown>;
-      if (typeof item.date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(item.date) ||
-          typeof item.count !== 'number' || !Number.isInteger(item.count) || item.count < 0 ||
-          typeof item.level !== 'number' || !Number.isInteger(item.level) || item.level < 0 || item.level > 4) {
-        throw new Error('Invalid contribution day');
-      }
-      return { date: item.date, count: item.count, level: item.level as 0 | 1 | 2 | 3 | 4 };
-    });
+    if (!isValidContributionTimeline(raw)) throw new Error('Invalid or out-of-date contribution timeline');
+    const days = raw;
     const stats = calculateContributionStats(days);
     const time = Date.now();
     const result: GitHubContributionData = {
@@ -577,7 +596,7 @@ export async function fetchGitHubContributions(forceRefresh = false): Promise<Gi
     return result;
   } catch (error) {
     console.warn('GitHub contributions unavailable:', error);
-    if (cached) return asCached(cached.value, cached.time);
+    if (reusableCache) return asCached(reusableCache.value, reusableCache.time);
     return {
       totalContributions: 0,
       currentStreak: 0,
