@@ -305,7 +305,10 @@ export const GitHubContributionGraph: React.FC<GitHubContributionGraphProps> = (
               {/* Month row across the top */}
               <div className="heatmap-months-row">
                 <div className="heatmap-days-spacer" />
-                <div className="heatmap-months-track">
+                <div
+                  className="heatmap-months-track"
+                  style={{ gridTemplateColumns: `repeat(${weeks.length}, 12px)` }}
+                >
                   {monthLabels.map((m, idx) => (
                     <span
                       key={`${m.label}-${idx}`}
@@ -337,7 +340,7 @@ export const GitHubContributionGraph: React.FC<GitHubContributionGraphProps> = (
                 <div
                   className="heatmap-weeks-container"
                   style={{
-                    gridTemplateColumns: `repeat(${weeks.length}, minmax(11px, 1fr))`,
+                    gridTemplateColumns: `repeat(${weeks.length}, 12px)`,
                   }}
                 >
                   {weeks.map((week, wIdx) => (
