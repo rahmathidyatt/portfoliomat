@@ -10,6 +10,8 @@ const CACHE_KEY_CONTRIBUTIONS_TIME = 'rahmathidyatt_github_contributions_time_v3
 const CACHE_DURATION_MS = 15 * 60 * 1000;
 const MAX_STALE_CONTRIBUTIONS_MS = 24 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
+const MIN_YEAR_CONTRIBUTION_DAYS = 360;
+const MAX_YEAR_CONTRIBUTION_DAYS = 367;
 
 type ResourceResult<T> = {
   value: T;
@@ -485,7 +487,11 @@ export function formatRelativeTime(dateString: string, lang: 'en' | 'id'): strin
 /**
  * Calculates metrics from a list of contribution days
  */
-export function calculateContributionStats(contributions: GitHubContributionDay[]) {
+export function calculateContributionStats(
+  contributions: GitHubContributionDay[],
+  now: Date = new Date(),
+  utcOffsetMinutes: number = -now.getTimezoneOffset(),
+) {
   let totalContributions = 0;
   let longestStreak = 0;
   let tempStreak = 0;
@@ -510,8 +516,11 @@ export function calculateContributionStats(contributions: GitHubContributionDay[
   // A streak is only current when the final observed date is today or yesterday.
   // An old response must never claim that a historical streak is still active.
   let currentStreak = 0;
-  const today = new Date().toISOString().slice(0, 10);
-  const yesterday = new Date(Date.now() - DAY_MS).toISOString().slice(0, 10);
+  // GitHub supplies calendar dates (YYYY-MM-DD), not UTC instants.
+  // Compare them against the visitor's calendar day, not the UTC day.
+  // Inject the offset in tests to cover midnight boundaries independent of CI timezone.
+  const today = new Date(now.getTime() + utcOffsetMinutes * 60_000).toISOString().slice(0, 10);
+  const yesterday = new Date(Date.parse(today + 'T00:00:00.000Z') - DAY_MS).toISOString().slice(0, 10);
   const latestDate = contributions[contributions.length - 1]?.date;
   if (latestDate === today || latestDate === yesterday) {
     let startIndex = contributions.length - 1;
@@ -539,7 +548,11 @@ export function calculateContributionStats(contributions: GitHubContributionDay[
  * Unknown dates must not be interpreted as zero-activity days.
  */
 export function isValidContributionTimeline(days: unknown, now = Date.now()): days is GitHubContributionDay[] {
-  if (!Array.isArray(days) || days.length === 0 || days.length > 370) return false;
+  // A few recent days cannot legitimately represent a 12-month heatmap.
+  // The provider normally returns 365/366 daily entries; allow a small edge tolerance.
+  if (!Array.isArray(days) ||
+      days.length < MIN_YEAR_CONTRIBUTION_DAYS ||
+      days.length > MAX_YEAR_CONTRIBUTION_DAYS) return false;
   let previous = -1;
   for (const day of days) {
     if (!day || typeof day !== 'object') return false;
