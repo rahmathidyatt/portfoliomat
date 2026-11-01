@@ -3,6 +3,7 @@ import emailjs from '@emailjs/browser';
 import { Mail, MapPin, CheckCircle, Copy, Send, Clock } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../data/translations';
+import { getEmailJsFailureMessage, summarizeEmailJsError } from '../utils/emailjsError';
 
 export const Contact: React.FC = () => {
   const { language } = useLanguage();
@@ -46,6 +47,7 @@ export const Contact: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
 
     if (
       !formData.user_name.trim() ||
@@ -91,9 +93,10 @@ export const Contact: React.FC = () => {
         setStatusMessage({ text: '', type: '' });
       }, 5000);
     } catch (err) {
-      console.warn('EmailJS error:', err);
+      // Log only a diagnostic category/status; avoid exposing raw service responses or user data.
+      console.warn('EmailJS send failed:', summarizeEmailJsError(err));
       setStatusMessage({
-        text: t.contact.errorStatus,
+        text: getEmailJsFailureMessage(err, language, t.contact.emailValue),
         type: 'red',
       });
     } finally {

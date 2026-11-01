@@ -384,6 +384,10 @@ export const GitHubContributionGraph: React.FC<GitHubContributionGraphProps> = (
                 : data?.source === 'cached'
                   ? (language === 'id' ? 'Riwayat tersimpan (cache), bukan data live' : 'Cached history, not live data')
                   : (language === 'id' ? 'Riwayat tidak tersedia' : 'History unavailable')}
+              {data?.source !== 'unavailable' && data?.contributions.length
+                ? ' · ' + (language === 'id' ? 'Data hingga ' : 'Data through ') +
+                  data.contributions[data.contributions.length - 1].date
+                : ''}
             </span>
           </div>
 

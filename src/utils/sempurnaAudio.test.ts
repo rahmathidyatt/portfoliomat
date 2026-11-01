@@ -56,7 +56,8 @@ test('GitHub contribution statistics use deterministic sample data', () => {
 
   const stats = calculateContributionStats(days);
   assert.equal(stats.totalContributions, 9);
-  assert.equal(stats.currentStreak, 1);
+  // Historical sample: its last day is not today or yesterday.
+  assert.equal(stats.currentStreak, 0);
   assert.equal(stats.longestStreak, 2);
   assert.deepEqual(stats.peakDay, { date: '2026-10-03', count: 4 });
   assert.equal(formatContributionDate('2025-12-02', 'en'), 'Tuesday, Dec 2, 2025');
