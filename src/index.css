@@ -1950,10 +1950,9 @@ button {
 
 .heatmap-months-track {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(13px, 1fr);
+  /* Match the fixed-width week columns instead of stretching month labels. */
   gap: 3px;
-  width: 100%;
+  width: max-content;
 }
 
 .heatmap-month-label {
