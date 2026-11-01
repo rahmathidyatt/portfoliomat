@@ -37,8 +37,8 @@ const todayUTC = () => new Date().toISOString().slice(0, 10);
 const dayOffset = (offset: number) => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
 const contributions = {
   contributions: [
-    { date: dayOffset(-1), count: 2, level: 2 },
-    { date: todayUTC(), count: 0, level: 0 },
+    { date: dayOffset(-1), count: 2, level: 2 as const },
+    { date: todayUTC(), count: 0, level: 0 as const },
   ],
 };
 
