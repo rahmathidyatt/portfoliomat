@@ -4,6 +4,8 @@ import {
   fetchGitHubData,
   fetchGitHubContributions,
   GITHUB_FALLBACK_REPOS,
+  calculateContributionStats,
+  isValidContributionTimeline,
 } from './githubService';
 
 const profile = {
@@ -31,10 +33,12 @@ const repo = {
   topics: [],
   fork: false,
 };
+const todayUTC = () => new Date().toISOString().slice(0, 10);
+const dayOffset = (offset: number) => new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
 const contributions = {
   contributions: [
-    { date: '2026-10-30', count: 2, level: 2 },
-    { date: '2026-10-31', count: 0, level: 0 },
+    { date: dayOffset(-1), count: 2, level: 2 },
+    { date: todayUTC(), count: 0, level: 0 },
   ],
 };
 
@@ -147,4 +151,80 @@ test('cache is per resource and retains the original sync time on fallback', asy
   const freshContributions = await fetchGitHubContributions(true);
   assert.equal(freshContributions.source, 'unavailable');
   assert.deepEqual(freshContributions.contributions, []);
+});
+
+
+test('rejects out-of-order, duplicate, missing, invalid and stale contribution days', () => {
+  const valid = [
+    { date: dayOffset(-2), count: 1, level: 1 },
+    { date: dayOffset(-1), count: 0, level: 0 },
+    { date: todayUTC(), count: 2, level: 2 },
+  ];
+  assert.equal(isValidContributionTimeline(valid), true);
+  assert.equal(isValidContributionTimeline([valid[1], valid[0]]), false);
+  assert.equal(isValidContributionTimeline([valid[0], valid[0]]), false);
+  assert.equal(isValidContributionTimeline([valid[0], valid[2]]), false);
+  assert.equal(isValidContributionTimeline([{ date: '2026-02-30', count: 1, level: 1 }]), false);
+  assert.equal(isValidContributionTimeline([{ date: dayOffset(-10), count: 1, level: 1 }]), false);
+  assert.equal(isValidContributionTimeline([{ date: dayOffset(2), count: 1, level: 1 }]), false);
+});
+
+test('outdated remote history is unavailable rather than shown as up to date', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  globalThis.fetch = async () =>
+    json({ contributions: [{ date: dayOffset(-45), count: 19, level: 4 }] });
+  const data = await fetchGitHubContributions(true);
+  assert.equal(data.source, 'unavailable');
+  assert.equal(data.currentStreak, 0);
+  assert.deepEqual(data.contributions, []);
+});
+
+test('historical values do not masquerade as current streaks', () => {
+  const stats = calculateContributionStats([
+    { date: dayOffset(-11), count: 2, level: 1 },
+    { date: dayOffset(-10), count: 3, level: 2 },
+  ]);
+  assert.equal(stats.currentStreak, 0);
+  assert.equal(stats.totalContributions, 5);
+  assert.equal(stats.longestStreak, 2);
+});
+
+test('old local history is not reused indefinitely after remote failure', async (t) => {
+  const originalFetch = globalThis.fetch;
+  const originalWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  const originalStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  const map = new Map<string, string>();
+  const values = contributions.contributions;
+  const stats = calculateContributionStats(values);
+  map.set('rahmathidyatt_github_contributions_v3', JSON.stringify({
+    ...stats, contributions: values, source: 'live', lastSyncedAt: null,
+  }));
+  map.set('rahmathidyatt_github_contributions_time_v3', String(Date.now() - 48 * 60 * 60 * 1000));
+  Object.defineProperty(globalThis, 'window', { configurable: true, value: {} });
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem: (key: string) => map.get(key) ?? null,
+    setItem: (key: string, value: string) => { map.set(key, value); },
+    removeItem: (key: string) => { map.delete(key); },
+  } });
+  t.after(() => {
+    globalThis.fetch = originalFetch;
+    if (originalWindow) Object.defineProperty(globalThis, 'window', originalWindow);
+    else Reflect.deleteProperty(globalThis, 'window');
+    if (originalStorage) Object.defineProperty(globalThis, 'localStorage', originalStorage);
+    else Reflect.deleteProperty(globalThis, 'localStorage');
+  });
+  globalThis.fetch = async () => { throw new Error('Offline'); };
+  const data = await fetchGitHubContributions(true);
+  assert.equal(data.source, 'unavailable');
+  assert.deepEqual(data.contributions, []);
+});
+
+test('aborted contribution fetch is treated as unavailable, not as zero contributions', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  globalThis.fetch = async () => { throw new DOMException('Aborted', 'AbortError'); };
+  const data = await fetchGitHubContributions(true);
+  assert.equal(data.source, 'unavailable');
+  assert.deepEqual(data.contributions, []);
 });
