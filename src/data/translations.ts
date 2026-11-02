@@ -32,7 +32,7 @@ export const translations = {
       subtitle: 'Professional Background & Ambition',
       kicker: 'WHO I AM',
       bioP1:
-        'A graduate of the Information Systems program with internship experience in a government institution and professional experience as an Administrative Staff at STMIK Bina Bangsa Kendari. Proficient in using Microsoft Office, managing documents, and possessing practical knowledge of data analysis using Python.',
+        'An Information Systems graduate with experience in administration, operational coordination, and document management. Previously completed an internship at a government institution and worked as Administrative Staff at STMIK Bina Bangsa Kendari. Currently serving as Operations Staff at Brighton Real Estate in Cibubur, supporting daily operations, activity coordination, and administrative workflows. Proficient in Microsoft Office, with practical skills in data analysis using Python.',
       bioP2:
         'Highly motivated, quick to adapt to emerging technologies, and equally effective whether working independently or collaborating within multi-disciplinary teams.',
       downloadCV: 'Download CV',
@@ -314,7 +314,7 @@ export const translations = {
       subtitle: 'Latar Belakang Profesional & Ambisi',
       kicker: 'TENTANG SAYA',
       bioP1:
-        'Lulusan program studi Sistem Informasi dengan pengalaman magang di instansi pemerintahan serta pengalaman profesional sebagai Staf Administrasi di STMIK Bina Bangsa Kendari. Mahir mengoperasikan Microsoft Office, tata kelola dokumen, dan memiliki pengetahuan terapan analisis data dengan Python.',
+        'Lulusan Sistem Informasi dengan pengalaman di bidang administrasi, koordinasi operasional, dan pengelolaan dokumen. Pernah menjalani magang di instansi pemerintahan dan bekerja sebagai Staf Administrasi di STMIK Bina Bangsa Kendari. Saat ini aktif bekerja sebagai Staf Operasional di Brighton Real Estate, Cibubur, dengan peran mendukung kegiatan operasional harian, koordinasi aktivitas, dan kelancaran administrasi. Menguasai Microsoft Office serta memiliki kemampuan praktis analisis data menggunakan Python.',
       bioP2:
         'Memiliki motivasi tinggi, cepat beradaptasi dengan teknologi baru, serta dapat bekerja mandiri maupun berkolaborasi aktif dalam tim lintas fungsi.',
       downloadCV: 'Unduh CV',
