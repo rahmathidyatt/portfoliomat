@@ -13,7 +13,7 @@ export const Certificates: React.FC<CertificatesProps> = ({ onViewAllCertificate
   const { language } = useLanguage();
   const t = translations[language];
 
-  const [activeFilter, setActiveFilter] = useState<'all' | 'data' | 'web' | 'leadership'>('all');
+  const [activeFilter, setActiveFilter] = useState<'all' | 'technology' | 'leadership'>('all');
   const [selectedCert, setSelectedCert] = useState<CertificateItem | null>(null);
 
   // Close modal on Escape key
@@ -55,21 +55,12 @@ export const Certificates: React.FC<CertificatesProps> = ({ onViewAllCertificate
           </button>
           <button
             type="button"
-            className={`filter-tab ${activeFilter === 'data' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('data')}
+            className={`filter-tab ${activeFilter === 'technology' ? 'active' : ''}`}
+            onClick={() => setActiveFilter('technology')}
             role="tab"
-            aria-selected={activeFilter === 'data'}
+            aria-selected={activeFilter === 'technology'}
           >
-            {t.certificates.filterData}
-          </button>
-          <button
-            type="button"
-            className={`filter-tab ${activeFilter === 'web' ? 'active' : ''}`}
-            onClick={() => setActiveFilter('web')}
-            role="tab"
-            aria-selected={activeFilter === 'web'}
-          >
-            {t.certificates.filterWeb}
+            {t.certificates.filterTechnology}
           </button>
           <button
             type="button"
