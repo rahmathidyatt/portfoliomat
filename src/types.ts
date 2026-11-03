@@ -21,7 +21,7 @@ export interface CertificateItem {
   img: string;
   pdf: string;
   isFeatured?: boolean;
-  category?: 'data' | 'web' | 'leadership';
+  category?: 'technology' | 'leadership';
 }
 
 export interface QualificationItem {

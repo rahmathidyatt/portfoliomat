@@ -96,7 +96,7 @@ export const CERTIFICATES: CertificateItem[] = [
     issuer: 'Dicoding Academy',
     img: '/assets/sertifikat/img/Analisis-Data-Python.jpg',
     pdf: '/assets/sertifikat/pdf/Analisis-Data-Python.pdf',
-    category: 'data',
+    category: 'technology',
     isFeatured: true,
   },
   {
@@ -106,7 +106,7 @@ export const CERTIFICATES: CertificateItem[] = [
     issuer: 'Dicoding Academy',
     img: '/assets/sertifikat/img/Data-Science.jpg',
     pdf: '/assets/sertifikat/pdf/Data-Science.pdf',
-    category: 'data',
+    category: 'technology',
     isFeatured: true,
   },
   {
@@ -116,7 +116,7 @@ export const CERTIFICATES: CertificateItem[] = [
     issuer: 'Sololearn',
     img: '/assets/sertifikat/img/Cource-HTML.jpg',
     pdf: '/assets/sertifikat/pdf/Cource-HTML.pdf',
-    category: 'web',
+    category: 'technology',
     isFeatured: true,
   },
   {
@@ -126,7 +126,7 @@ export const CERTIFICATES: CertificateItem[] = [
     issuer: 'Sololearn',
     img: '/assets/sertifikat/img/Course-Python.jpg',
     pdf: '/assets/sertifikat/pdf/Course-Python.pdf',
-    category: 'data',
+    category: 'technology',
     isFeatured: true,
   },
   {
@@ -136,7 +136,7 @@ export const CERTIFICATES: CertificateItem[] = [
     issuer: 'Cisco Networking Academy',
     img: '/assets/sertifikat/img/PCAP-Programming.jpg',
     pdf: '/assets/sertifikat/pdf/PCAP-Programming.pdf',
-    category: 'data',
+    category: 'technology',
     isFeatured: false,
   },
   {
@@ -146,7 +146,7 @@ export const CERTIFICATES: CertificateItem[] = [
     issuer: 'Himpunan Mahasiswa SI',
     img: '/assets/sertifikat/img/Man-IT.jpg',
     pdf: '/assets/sertifikat/pdf/Man-IT.pdf',
-    category: 'web',
+    category: 'technology',
     isFeatured: false,
   },
   {
