@@ -141,7 +141,7 @@ export const Header: React.FC<HeaderProps> = ({
           }}
           aria-label="Home"
         >
-          Rahmat<span className="nav__logo-dot">.</span>
+          Portfolio<span className="nav__logo-dot">.</span>
         </a>
 
         {currentView === 'certificates' ? (
