@@ -16,7 +16,7 @@ export const translations = {
     },
     hero: {
       badge: 'Open to Part-Time & Projects',
-      location: 'Based in Bogor & Cibubur, Indonesia',
+      location: 'Based in Cibubur, Bogor, Indonesia',
       greeting: "Hello, I'm",
       name: 'Rahmat Hidayat',
       typedStrings: ['Information Systems', 'Data Analysis', 'Data Science', 'Administration & Operations'],
@@ -40,7 +40,7 @@ export const translations = {
       facts: [
         { label: 'Specialization', value: 'Information Systems & Data Analytics' },
         { label: 'Education', value: 'Universitas Bina Sarana Informatika' },
-        { label: 'Location', value: 'Bogor & Cibubur, Indonesia' },
+        { label: 'Location', value: 'Cibubur, Bogor, Indonesia' },
         { label: 'Status', value: 'Open to Part-Time & Projects' },
       ],
     },
@@ -249,7 +249,7 @@ export const translations = {
       copyEmail: 'Copy Email',
       copiedEmail: 'Email Copied!',
       locationTitle: 'Primary Location',
-      locationValue: 'Bogor & Cibubur, Indonesia',
+      locationValue: 'Cibubur, Bogor, Indonesia',
       statusTitle: 'Availability',
       statusValue: 'Open for Part-Time & Project Opportunities',
       nameLabel: 'Your Full Name',
@@ -297,7 +297,7 @@ export const translations = {
     },
     hero: {
       badge: 'Terbuka untuk Paruh Waktu & Proyek',
-      location: 'Berlokasi di Bogor & Cibubur, Indonesia',
+      location: 'Berlokasi di Cibubur, Bogor, Indonesia',
       greeting: 'Halo, saya',
       name: 'Rahmat Hidayat',
       typedStrings: ['Sistem Informasi', 'Analisis Data', 'Data Science', 'Administrasi & Operasional'],
@@ -321,7 +321,7 @@ export const translations = {
       facts: [
         { label: 'Spesialisasi', value: 'Sistem Informasi & Analisis Data' },
         { label: 'Pendidikan', value: 'Universitas Bina Sarana Informatika' },
-        { label: 'Lokasi', value: 'Bogor & Cibubur, Indonesia' },
+        { label: 'Lokasi', value: 'Cibubur, Bogor, Indonesia' },
         { label: 'Status', value: 'Terbuka untuk Paruh Waktu & Proyek' },
       ],
     },
@@ -530,7 +530,7 @@ export const translations = {
       copyEmail: 'Salin Email',
       copiedEmail: 'Email Disalin!',
       locationTitle: 'Lokasi Utama',
-      locationValue: 'Bogor & Cibubur, Indonesia',
+      locationValue: 'Cibubur, Bogor, Indonesia',
       statusTitle: 'Ketersediaan',
       statusValue: 'Terbuka untuk pekerjaan paruh waktu dan proyek',
       nameLabel: 'Nama Lengkap',
