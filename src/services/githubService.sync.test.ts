@@ -100,6 +100,43 @@ test('contribution data is live only on a valid fresh response', async (t) => {
   assert.ok(data.lastSyncedAt instanceof Date);
 });
 
+test('overlong upstream history is validated and trimmed to the latest real year', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  // The live third-party API returned 368 days on 04 Nov 2026.
+  const upstream = sampleContributions(368);
+  globalThis.fetch = async () => json({ contributions: upstream });
+
+  const data = await fetchGitHubContributions(true);
+  assert.equal(data.source, 'live');
+  assert.equal(data.contributions.length, 366);
+  assert.equal(data.contributions[0].date, upstream[2].date);
+  assert.equal(data.contributions.at(-1)?.date, upstream.at(-1)?.date);
+  assert.equal(data.totalContributions, 2);
+});
+
+test('overlong history with an invalid discarded prefix still fails validation', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  const upstream = sampleContributions(368);
+  upstream[0] = { ...upstream[1] }; // duplicate outside the retained 366-day window
+  globalThis.fetch = async () => json({ contributions: upstream });
+
+  const data = await fetchGitHubContributions(true);
+  assert.equal(data.source, 'unavailable');
+  assert.deepEqual(data.contributions, []);
+});
+
+test('overlong stale history is not presented as current contributions', async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => { globalThis.fetch = originalFetch; });
+  globalThis.fetch = async () => json({ contributions: sampleContributions(368, -10) });
+
+  const data = await fetchGitHubContributions(true);
+  assert.equal(data.source, 'unavailable');
+  assert.deepEqual(data.contributions, []);
+});
+
 test('unavailable contribution API never invents missing days', async (t) => {
   const originalFetch = globalThis.fetch;
   t.after(() => { globalThis.fetch = originalFetch; });
