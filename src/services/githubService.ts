@@ -12,6 +12,9 @@ const MAX_STALE_CONTRIBUTIONS_MS = 24 * 60 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const MIN_YEAR_CONTRIBUTION_DAYS = 360;
 const MAX_YEAR_CONTRIBUTION_DAYS = 367;
+// The upstream `y=last` endpoint may include extra leading days beyond one year.
+// Validate its full timeline before retaining the most recent year for display.
+const MAX_PROVIDER_CONTRIBUTION_DAYS = 732;
 
 type ResourceResult<T> = {
   value: T;
@@ -547,12 +550,16 @@ export function calculateContributionStats(
  * Reject malformed, unordered, incomplete or out-of-date third-party timelines.
  * Unknown dates must not be interpreted as zero-activity days.
  */
-export function isValidContributionTimeline(days: unknown, now = Date.now()): days is GitHubContributionDay[] {
+export function isValidContributionTimeline(
+  days: unknown,
+  now = Date.now(),
+  maxDays = MAX_YEAR_CONTRIBUTION_DAYS,
+): days is GitHubContributionDay[] {
   // A few recent days cannot legitimately represent a 12-month heatmap.
   // The provider normally returns 365/366 daily entries; allow a small edge tolerance.
   if (!Array.isArray(days) ||
       days.length < MIN_YEAR_CONTRIBUTION_DAYS ||
-      days.length > MAX_YEAR_CONTRIBUTION_DAYS) return false;
+      days.length > maxDays) return false;
   let previous = -1;
   for (const day of days) {
     if (!day || typeof day !== 'object') return false;
@@ -598,8 +605,14 @@ export async function fetchGitHubContributions(forceRefresh = false): Promise<Gi
       throw new Error('Invalid contributions response');
     }
     const raw = (json as { contributions: unknown[] }).contributions;
-    if (!isValidContributionTimeline(raw)) throw new Error('Invalid or out-of-date contribution timeline');
-    const days = raw;
+    // Validate every upstream day before trimming. This avoids hiding gaps,
+    // duplicates or malformed entries outside the displayed 12-month window.
+    if (!isValidContributionTimeline(raw, Date.now(), MAX_PROVIDER_CONTRIBUTION_DAYS)) {
+      throw new Error('Invalid or out-of-date contribution timeline');
+    }
+    // The provider can return 368+ days for `y=last`, while the heatmap and
+    // cache represent one year. Keep real observations; never pad missing days.
+    const days = raw.length > MAX_YEAR_CONTRIBUTION_DAYS ? raw.slice(-366) : raw;
     const stats = calculateContributionStats(days);
     const time = Date.now();
     const result: GitHubContributionData = {
