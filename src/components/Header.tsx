@@ -125,7 +125,7 @@ export const Header: React.FC<HeaderProps> = ({
     { id: 'about', label: t.nav.about, icon: User },
     { id: 'certificate', label: t.nav.certificate, icon: Award },
     { id: 'background', label: t.nav.background, icon: Briefcase },
-    { id: 'portfolio', label: t.nav.project, icon: FolderGit2 },
+    { id: 'featured', label: t.nav.project, icon: FolderGit2 },
     { id: 'contact', label: t.nav.contact, icon: Mail },
   ];
 

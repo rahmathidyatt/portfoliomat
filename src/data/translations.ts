@@ -143,8 +143,8 @@ export const translations = {
       tagsAria: 'Tools used',
     },
     projects: {
-      title: 'Projects & Repositories',
-      subtitle: 'Open-source web applications, systems, and repositories dynamically synced from GitHub',
+      title: 'GitHub Activity',
+      subtitle: 'How often I ship code, and the tools behind my repositories',
       kicker: 'PORTFOLIO',
       sourceCode: 'Source Code',
       viewProject: 'Project Details',
@@ -434,8 +434,8 @@ export const translations = {
       tagsAria: 'Tools yang dipakai',
     },
     projects: {
-      title: 'Proyek & Repositori',
-      subtitle: 'Aplikasi web, sistem, dan repositori terbuka yang tersinkronisasi langsung dari GitHub',
+      title: 'Aktivitas GitHub',
+      subtitle: 'Seberapa sering aku ngoding, dan tools yang dipakai di repo-repoku',
       kicker: 'PORTOFOLIO',
       sourceCode: 'Kode Sumber',
       viewProject: 'Detail Proyek',
