@@ -1,10 +1,10 @@
 import React from 'react';
-import { ArrowUpRight, Database, LayoutGrid, Search } from 'lucide-react';
+import { ArrowUpRight, Database, LayoutGrid, Search, type LucideIcon } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { translations } from '../data/translations';
 import { featuredWork, FeaturedIcon } from '../data/featuredWork';
 
-const ICONS: Record<FeaturedIcon, React.FC<{ size?: number }>> = {
+const ICONS: Record<FeaturedIcon, LucideIcon> = {
   search: Search,
   database: Database,
   layout: LayoutGrid,
