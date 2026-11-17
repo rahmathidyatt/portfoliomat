@@ -132,6 +132,16 @@ export const translations = {
         },
       ],
     },
+    featured: {
+      kicker: 'FEATURED WORK',
+      title: 'Things that made me curious',
+      subtitle: 'Every project starts with a question. Here are a few I chased down.',
+      labelQuestion: 'It started with',
+      labelBuilt: 'What I built',
+      labelLearned: 'What I learned',
+      seeCode: 'See the code',
+      tagsAria: 'Tools used',
+    },
     projects: {
       title: 'Projects & Repositories',
       subtitle: 'Open-source web applications, systems, and repositories dynamically synced from GitHub',
@@ -412,6 +422,16 @@ export const translations = {
           isFirst: false,
         },
       ],
+    },
+    featured: {
+      kicker: 'KARYA PILIHAN',
+      title: 'Hal-hal yang bikin aku penasaran',
+      subtitle: 'Tiap proyek berawal dari satu pertanyaan. Ini beberapa yang aku kejar sampai jadi.',
+      labelQuestion: 'Awalnya',
+      labelBuilt: 'Yang aku buat',
+      labelLearned: 'Yang aku pelajari',
+      seeCode: 'Lihat kodenya',
+      tagsAria: 'Tools yang dipakai',
     },
     projects: {
       title: 'Proyek & Repositori',
