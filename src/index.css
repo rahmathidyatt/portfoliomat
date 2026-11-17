@@ -4371,3 +4371,166 @@ body.dark-theme .form-status-alert.color-red {
   }
 }
 
+
+/* =============== Featured Work (Karya pilihan) ============== */
+.featured__list {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.featured-card {
+  background-color: var(--container-color);
+  border: 1px solid var(--card-border);
+  border-radius: 1.25rem;
+  padding: 1.75rem 2rem;
+  box-shadow: var(--card-shadow);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.featured-card:hover {
+  box-shadow: var(--card-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.featured-card__head {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  flex-wrap: wrap;
+}
+
+.featured-card__number {
+  font-size: var(--small-font-size);
+  font-weight: var(--font-bold);
+  color: var(--text-color-light);
+  letter-spacing: 0.08em;
+}
+
+.featured-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background-color: var(--first-color-lighter);
+  color: var(--first-color);
+  flex-shrink: 0;
+}
+
+.featured-card__heading {
+  flex: 1;
+  min-width: 180px;
+}
+
+.featured-card__title {
+  font-size: var(--h3-font-size);
+  margin: 0;
+}
+
+.featured-card__tagline {
+  font-size: var(--small-font-size);
+  color: var(--text-color-light);
+  margin: 0.15rem 0 0;
+}
+
+.featured-card__status {
+  font-size: var(--smaller-font-size);
+  font-weight: var(--font-semi-bold);
+  color: var(--first-color);
+  background-color: var(--first-color-glow);
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.featured-card__story {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.featured-card__story--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.featured-card__label {
+  display: block;
+  font-size: var(--smaller-font-size);
+  font-weight: var(--font-semi-bold);
+  color: var(--first-color);
+  margin-bottom: 0.4rem;
+}
+
+.featured-card__block p {
+  font-size: var(--small-font-size);
+  line-height: 1.7;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.featured-card__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--card-border);
+}
+
+.featured-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.featured-card__tags li {
+  font-size: var(--smaller-font-size);
+  color: var(--text-color);
+  background-color: var(--input-color);
+  border: 1px solid var(--card-border);
+  padding: 0.25rem 0.65rem;
+  border-radius: 0.5rem;
+}
+
+.featured-card__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: var(--small-font-size);
+  font-weight: var(--font-semi-bold);
+  color: var(--first-color);
+  text-decoration: none;
+}
+
+.featured-card__link:hover {
+  color: var(--first-color-alt);
+}
+
+@media screen and (max-width: 768px) {
+  .featured-card {
+    padding: 1.35rem 1.25rem;
+  }
+
+  .featured-card__story,
+  .featured-card__story--two {
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .featured-card,
+  .featured-card:hover {
+    transition: none;
+    transform: none;
+  }
+}

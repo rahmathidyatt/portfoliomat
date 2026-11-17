@@ -6,6 +6,7 @@ import { About } from './components/About';
 import { Certificates } from './components/Certificates';
 import { CertificatesPage } from './components/CertificatesPage';
 import { Background } from './components/Background';
+import { FeaturedWork } from './components/FeaturedWork';
 import { Projects } from './components/Projects';
 import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
@@ -65,6 +66,7 @@ export const PortfolioApp: React.FC = () => {
           <About />
           <Certificates onViewAllCertificates={handleNavigateCertificates} />
           <Background />
+          <FeaturedWork />
           <Projects />
           <Contact />
         </main>
